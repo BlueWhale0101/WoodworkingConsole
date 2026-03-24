@@ -330,6 +330,89 @@
         grid-template-columns: 1fr;
       }
     }
+
+    .media-toolbar {
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:end;
+      margin: 12px 0;
+    }
+    .media-toolbar label { flex:1 1 180px; }
+    .media-toolbar input[type="file"] { width:100%; }
+    .media-gallery {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap:12px;
+      margin-top: 12px;
+    }
+    .media-card {
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      min-height: 100%;
+    }
+    .media-thumb {
+      aspect-ratio: 4 / 3;
+      background:#ece4d7;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .media-thumb img {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .media-body { padding:10px; display:flex; flex-direction:column; gap:8px; }
+    .media-meta { display:flex; gap:6px; flex-wrap:wrap; }
+    .tag {
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      border:1px solid var(--line);
+      background:#faf6ef;
+      border-radius:999px;
+      padding:4px 8px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .cover-badge {
+      background:rgba(47,107,59,0.12);
+      color:var(--good);
+      border-color: rgba(47,107,59,0.2);
+    }
+    .media-actions { display:flex; flex-wrap:wrap; gap:8px; }
+    .project-cover {
+      width:100%;
+      height:180px;
+      border-radius:12px;
+      object-fit:cover;
+      margin: 10px 0 2px;
+      border:1px solid var(--line);
+      background:#efe7dc;
+    }
+    .gallery-empty {
+      border:1px dashed var(--line);
+      border-radius:14px;
+      padding:14px;
+      color:var(--muted);
+      background:#fcfaf7;
+    }
+    .hint-box {
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fcfaf7;
+      padding:12px 14px;
+      color:var(--muted);
+      margin-top:12px;
+    }
+
   </style>
 </head>
 <body>
@@ -351,7 +434,7 @@
       <div class="toolbar-right">
         <button id="exportDataBtn">Export Data</button>
         <label class="file-label" for="importFile">Import Data</label>
-        <input id="importFile" class="hidden-input" type="file" accept="application/json" />
+        <input id="importFile" class="hidden-input" type="file" accept="application/json,.json,.zip,application/zip" />
         <button id="resetAllBtn" class="danger">Reset All</button>
       </div>
     </section>
@@ -409,8 +492,8 @@
               <label>Date Completed
                 <input id="projectEndDate" type="date" />
               </label>
-              <label>Photo URL
-                <input id="projectPhoto" placeholder="Optional image link" />
+              <label>Cover Image
+                <input id="projectCoverNote" value="Managed in the media gallery below" disabled />
               </label>
             </div>
             <label style="margin-top:12px;">Joinery Used
@@ -422,6 +505,40 @@
             <label style="margin-top:12px;">Next Step or Note
               <textarea id="projectNextStep" placeholder="Cut aprons, dry-fit base, test finish on offcut..."></textarea>
             </label>
+            <div class="panel" style="padding:14px; box-shadow:none; margin-top:14px;">
+              <h3>Project Media</h3>
+              <p class="muted">Add planning drawings, build photos, and final shots. Images are resized before saving and stored locally in your browser database.</p>
+              <div class="media-toolbar">
+                <label>Stage
+                  <select id="mediaStage">
+                    <option value="Planning">Planning</option>
+                    <option value="Build">Build</option>
+                    <option value="Final">Final</option>
+                    <option value="Reference">Reference</option>
+                  </select>
+                </label>
+                <label>Type
+                  <select id="mediaType">
+                    <option value="Drawing">Drawing</option>
+                    <option value="In-progress photo">In-progress photo</option>
+                    <option value="Final photo">Final photo</option>
+                    <option value="Reference image">Reference image</option>
+                  </select>
+                </label>
+                <label>Caption
+                  <input id="mediaCaption" placeholder="Base dry fit, sketch v2, first finish sample..." />
+                </label>
+                <label>Files
+                  <input id="mediaFiles" type="file" accept="image/*" multiple />
+                </label>
+              </div>
+              <div class="actions">
+                <button type="button" id="saveMediaBtn" class="primary">Add Media</button>
+                <button type="button" id="refreshMediaBtn" class="secondary">Refresh Gallery</button>
+              </div>
+              <div class="hint-box small">Tip: for a brand-new project, the app creates a project ID as soon as you add media, so your drawings and photos stay attached when you save the project details.</div>
+              <div id="projectMediaGallery" class="media-gallery"></div>
+            </div>
             <div class="actions">
               <button type="submit" class="primary">Save Project</button>
               <button type="button" id="clearProjectBtn" class="secondary">Clear Form</button>
@@ -689,6 +806,7 @@
     </section>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script>
     const STORAGE_KEY = 'woodworking_workshop_companion_v1';
 
@@ -1180,7 +1298,301 @@
       el('projectForm').reset();
       el('projectId').value = '';
       setCheckedValues('projectJoineryChips', []);
+      el('mediaCaption').value = '';
+      el('mediaFiles').value = '';
+      renderProjectMediaGallery();
     }
+
+
+    const MEDIA_DB_NAME = 'woodworking-workshop-media';
+    const MEDIA_STORE = 'media';
+    let mediaDbPromise;
+
+    function openMediaDb() {
+      if (mediaDbPromise) return mediaDbPromise;
+      mediaDbPromise = new Promise((resolve, reject) => {
+        const request = indexedDB.open(MEDIA_DB_NAME, 1);
+        request.onupgradeneeded = () => {
+          const db = request.result;
+          if (!db.objectStoreNames.contains(MEDIA_STORE)) {
+            const store = db.createObjectStore(MEDIA_STORE, { keyPath: 'id' });
+            store.createIndex('projectId', 'projectId', { unique: false });
+          }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      return mediaDbPromise;
+    }
+
+    async function mediaTx(mode, work) {
+      const db = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(MEDIA_STORE, mode);
+        const store = tx.objectStore(MEDIA_STORE);
+        const result = work(store, tx);
+        tx.oncomplete = () => resolve(result);
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+    }
+
+    async function putMediaRecord(record) {
+      const db = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(MEDIA_STORE, 'readwrite');
+        const store = tx.objectStore(MEDIA_STORE);
+        const req = store.put(record);
+        req.onsuccess = () => resolve(record);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function getProjectMedia(projectId) {
+      if (!projectId) return [];
+      const db = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(MEDIA_STORE, 'readonly');
+        const store = tx.objectStore(MEDIA_STORE);
+        const index = store.index('projectId');
+        const req = index.getAll(projectId);
+        req.onsuccess = () => resolve((req.result || []).sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || (a.createdAt || '').localeCompare(b.createdAt || '')));
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function getAllMedia() {
+      const db = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(MEDIA_STORE, 'readonly');
+        const store = tx.objectStore(MEDIA_STORE);
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function getMediaById(id) {
+      const db = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(MEDIA_STORE, 'readonly');
+        const store = tx.objectStore(MEDIA_STORE);
+        const req = store.get(id);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function deleteMediaRecord(id) {
+      const db = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(MEDIA_STORE, 'readwrite');
+        const store = tx.objectStore(MEDIA_STORE);
+        const req = store.delete(id);
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function clearAllMedia() {
+      const db = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(MEDIA_STORE, 'readwrite');
+        const store = tx.objectStore(MEDIA_STORE);
+        const req = store.clear();
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function ensureCurrentProjectId() {
+      let id = el('projectId').value;
+      if (!id) {
+        id = uid();
+        el('projectId').value = id;
+      }
+      return id;
+    }
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function dataUrlToBlob(dataUrl) {
+      const parts = dataUrl.split(',');
+      const mime = parts[0].match(/:(.*?);/)[1];
+      const binary = atob(parts[1]);
+      let n = binary.length;
+      const u8 = new Uint8Array(n);
+      while (n--) u8[n] = binary.charCodeAt(n);
+      return new Blob([u8], { type: mime });
+    }
+
+    async function resizeImageFile(file, maxDimension = 1800, quality = 0.82, thumbDimension = 480) {
+      const dataUrl = await fileToDataUrl(file);
+      const img = await new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = dataUrl;
+      });
+
+      function drawSized(limit, outType, outQuality) {
+        const scale = Math.min(1, limit / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL(outType, outQuality);
+      }
+
+      const fullType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+      const fullDataUrl = drawSized(maxDimension, fullType, quality);
+      const thumbDataUrl = drawSized(thumbDimension, 'image/jpeg', 0.72);
+      return {
+        fullBlob: dataUrlToBlob(fullDataUrl),
+        thumbDataUrl,
+        width: img.width,
+        height: img.height
+      };
+    }
+
+    function getProjectById(id) {
+      return state.projects.find(p => p.id === id);
+    }
+
+    function updateProjectMediaSummary(projectId, mediaItems) {
+      const project = getProjectById(projectId);
+      if (!project) return;
+      project.mediaCount = mediaItems.length;
+      if (!project.coverMediaId || !mediaItems.some(item => item.id === project.coverMediaId)) {
+        project.coverMediaId = mediaItems[0]?.id || '';
+      }
+      const cover = mediaItems.find(item => item.id === project.coverMediaId) || mediaItems[0];
+      project.coverThumb = cover?.thumbDataUrl || '';
+    }
+
+    async function syncProjectMediaSummary(projectId) {
+      const mediaItems = await getProjectMedia(projectId);
+      const project = getProjectById(projectId);
+      if (project) {
+        updateProjectMediaSummary(projectId, mediaItems);
+        saveState();
+      }
+      return mediaItems;
+    }
+
+    async function renderProjectMediaGallery() {
+      const projectId = el('projectId').value;
+      const gallery = el('projectMediaGallery');
+      if (!projectId) {
+        gallery.innerHTML = '<div class="gallery-empty">No media yet. Add files above and the app will attach them to this project.</div>';
+        return;
+      }
+      const items = await getProjectMedia(projectId);
+      const project = getProjectById(projectId);
+      if (project) updateProjectMediaSummary(projectId, items);
+      if (!items.length) {
+        gallery.innerHTML = '<div class="gallery-empty">No drawings or photos saved for this project yet.</div>';
+        return;
+      }
+      gallery.innerHTML = items.map(item => `
+        <article class="media-card">
+          <div class="media-thumb"><img src="${item.thumbDataUrl}" alt="${escapeAttribute(item.caption || item.filename || 'Project media')}"></div>
+          <div class="media-body">
+            <div>
+              <strong>${escapeHtml(item.caption || item.filename || item.type)}</strong>
+              <div class="small muted">${escapeHtml(item.filename || '')}</div>
+            </div>
+            <div class="media-meta">
+              <span class="tag">${escapeHtml(item.stage || 'Stage')}</span>
+              <span class="tag">${escapeHtml(item.type || 'Media')}</span>
+              ${project?.coverMediaId === item.id ? '<span class="tag cover-badge">Cover</span>' : ''}
+            </div>
+            <div class="media-actions">
+              <button type="button" onclick="viewMedia('${item.id}')">View</button>
+              <button type="button" onclick="setProjectCover('${item.id}')">Set Cover</button>
+              <button type="button" class="danger" onclick="deleteMedia('${item.id}')">Delete</button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    async function handleMediaUpload() {
+      const files = [...el('mediaFiles').files || []];
+      if (!files.length) {
+        alert('Choose at least one image file first.');
+        return;
+      }
+      const projectId = ensureCurrentProjectId();
+      const stage = el('mediaStage').value;
+      const type = el('mediaType').value;
+      const captionBase = el('mediaCaption').value.trim();
+      const existing = await getProjectMedia(projectId);
+      let order = existing.length;
+      for (const file of files) {
+        const processed = await resizeImageFile(file);
+        const record = {
+          id: uid(),
+          projectId,
+          filename: file.name,
+          caption: captionBase || file.name.replace(/\.[^.]+$/, ''),
+          stage,
+          type,
+          width: processed.width,
+          height: processed.height,
+          thumbDataUrl: processed.thumbDataUrl,
+          fullBlob: processed.fullBlob,
+          sortOrder: order++,
+          createdAt: new Date().toISOString()
+        };
+        await putMediaRecord(record);
+      }
+      await syncProjectMediaSummary(projectId);
+      el('mediaFiles').value = '';
+      el('mediaCaption').value = '';
+      renderProjects();
+      await renderProjectMediaGallery();
+    }
+
+    window.viewMedia = async function(id) {
+      const item = await getMediaById(id);
+      if (!item) return;
+      const url = URL.createObjectURL(item.fullBlob);
+      window.open(url, '_blank', 'noopener');
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+
+    window.setProjectCover = async function(mediaId) {
+      const projectId = el('projectId').value || (await getMediaById(mediaId))?.projectId;
+      const project = getProjectById(projectId);
+      const mediaItems = await getProjectMedia(projectId);
+      if (!project) return;
+      project.coverMediaId = mediaId;
+      const cover = mediaItems.find(item => item.id === mediaId);
+      project.coverThumb = cover?.thumbDataUrl || '';
+      project.mediaCount = mediaItems.length;
+      saveState();
+      renderProjects();
+      await renderProjectMediaGallery();
+    }
+
+    window.deleteMedia = async function(mediaId) {
+      const item = await getMediaById(mediaId);
+      if (!item) return;
+      await deleteMediaRecord(mediaId);
+      await syncProjectMediaSummary(item.projectId);
+      renderProjects();
+      await renderProjectMediaGallery();
+    }
+
 
     function projectStatusBadge(status) {
       if (status === 'Complete') return 'good';
@@ -1236,10 +1648,11 @@
             <div><strong>Cost:</strong> $${formatNumber(project.cost)}</div>
             <div><strong>Started:</strong> ${project.startDate || '—'}</div>
           </div>
+          ${project.coverThumb ? `<img class="project-cover" src="${project.coverThumb}" alt="${escapeAttribute(project.name)} cover image">` : ''}
           ${(project.joinery || []).length ? `<div class="pill-row">${project.joinery.map(j => `<span class="pill">${escapeHtml(j)}</span>`).join('')}</div>` : ''}
+          ${(project.mediaCount || 0) ? `<div class="meta"><div><strong>Media:</strong> ${project.mediaCount}</div><div><strong>Cover:</strong> ${project.coverMediaId ? 'Set' : 'None'}</div></div>` : ''}
           ${project.lessons ? `<p><strong>Lessons:</strong> ${escapeHtml(project.lessons)}</p>` : ''}
           ${project.nextStep ? `<p><strong>Next:</strong> ${escapeHtml(project.nextStep)}</p>` : ''}
-          ${project.photo ? `<p><a href="${escapeAttribute(project.photo)}" target="_blank" rel="noopener noreferrer">Open photo</a></p>` : ''}
           <div class="actions">
             <button type="button" onclick="editProject('${project.id}')">Edit</button>
             <button type="button" class="danger" onclick="deleteProject('${project.id}')">Delete</button>
@@ -1274,17 +1687,20 @@
       el('projectCost').value = project.cost ?? '';
       el('projectStartDate').value = project.startDate || '';
       el('projectEndDate').value = project.endDate || '';
-      el('projectPhoto').value = project.photo || '';
       el('projectLessons').value = project.lessons || '';
       el('projectNextStep').value = project.nextStep || '';
       setCheckedValues('projectJoineryChips', project.joinery || []);
+      renderProjectMediaGallery();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    window.deleteProject = function(id) {
+    window.deleteProject = async function(id) {
+      const mediaItems = await getProjectMedia(id);
+      for (const item of mediaItems) await deleteMediaRecord(item.id);
       state.projects = state.projects.filter(p => p.id !== id);
       saveState();
       renderProjects();
+      if (el('projectId').value === id) clearProjectForm();
     }
 
     function handleProjectSubmit(evt) {
@@ -1301,16 +1717,24 @@
         cost: el('projectCost').value,
         startDate: el('projectStartDate').value,
         endDate: el('projectEndDate').value,
-        photo: el('projectPhoto').value.trim(),
         lessons: el('projectLessons').value.trim(),
         nextStep: el('projectNextStep').value.trim(),
-        joinery: getCheckedValues('projectJoineryChips')
+        joinery: getCheckedValues('projectJoineryChips'),
+        mediaCount: 0,
+        coverMediaId: '',
+        coverThumb: ''
       };
 
       const existingIndex = state.projects.findIndex(p => p.id === id);
-      if (existingIndex >= 0) state.projects[existingIndex] = project;
-      else state.projects.push(project);
+      if (existingIndex >= 0) {
+        const existing = state.projects[existingIndex];
+        project.mediaCount = existing.mediaCount || 0;
+        project.coverMediaId = existing.coverMediaId || '';
+        project.coverThumb = existing.coverThumb || '';
+        state.projects[existingIndex] = project;
+      } else state.projects.push(project);
       saveState();
+      syncProjectMediaSummary(id).then(() => { renderProjects(); renderProjectMediaGallery(); });
       clearProjectForm();
       renderProjects();
     }
@@ -1795,13 +2219,44 @@
     }
 
 
-    function exportData() {
+    async function exportData() {
       const payload = {
         exportedAt: new Date().toISOString(),
         app: 'Woodworking Workshop Companion',
+        version: 3,
         data: state
       };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const allMedia = await getAllMedia();
+      if (window.JSZip) {
+        const zip = new JSZip();
+        zip.file('data.json', JSON.stringify(payload, null, 2));
+        allMedia.forEach(item => {
+          const ext = item.fullBlob?.type === 'image/png' ? 'png' : 'jpg';
+          const safeName = (item.filename || item.caption || item.id).replace(/[^a-z0-9._-]+/gi, '_');
+          zip.file(`media/${item.projectId}/${safeName || item.id}.${ext}`, item.fullBlob);
+        });
+        zip.file('media-index.json', JSON.stringify(allMedia.map(item => ({
+          ...item,
+          fullBlob: undefined
+        })), null, 2));
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'woodworking-workshop-data.zip';
+        a.click();
+        URL.revokeObjectURL(url);
+        return;
+      }
+      const fallback = {
+        ...payload,
+        media: await Promise.all(allMedia.map(async item => ({
+          ...item,
+          fullBlob: undefined,
+          fullDataUrl: await fileToDataUrl(new File([item.fullBlob], item.filename || 'media.jpg', { type: item.fullBlob?.type || 'image/jpeg' }))
+        })))
+      };
+      const blob = new Blob([JSON.stringify(fallback, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -1810,12 +2265,17 @@
       URL.revokeObjectURL(url);
     }
 
-    function importData(file) {
+    async function importData(file) {
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const imported = JSON.parse(evt.target.result);
+      const name = file.name.toLowerCase();
+      try {
+        if (name.endsWith('.zip')) {
+          if (!window.JSZip) throw new Error('ZIP import requires JSZip.');
+          const zip = await JSZip.loadAsync(file);
+          const dataFile = zip.file('data.json');
+          const indexFile = zip.file('media-index.json');
+          if (!dataFile) throw new Error('Missing data.json');
+          const imported = JSON.parse(await dataFile.async('string'));
           if (!imported.data) throw new Error('Invalid data file');
           state = {
             projects: imported.data.projects || [],
@@ -1827,20 +2287,55 @@
               savedIdeas: imported.data.generator?.savedIdeas || []
             }
           };
-          saveState();
-          renderAll();
-          alert('Data imported successfully.');
-        } catch (err) {
-          console.error(err);
-          alert('Could not import that file.');
+          await clearAllMedia();
+          if (indexFile) {
+            const mediaIndex = JSON.parse(await indexFile.async('string'));
+            for (const meta of mediaIndex) {
+              const ext = meta.blobType === 'image/png' ? 'png' : 'jpg';
+              const safeName = (meta.filename || meta.caption || meta.id).replace(/[^a-z0-9._-]+/gi, '_');
+              const zipEntry = zip.file(`media/${meta.projectId}/${safeName || meta.id}.${ext}`);
+              if (!zipEntry) continue;
+              const blob = await zipEntry.async('blob');
+              await putMediaRecord({ ...meta, fullBlob: blob });
+            }
+          }
+        } else {
+          const imported = JSON.parse(await file.text());
+          if (!imported.data) throw new Error('Invalid data file');
+          state = {
+            projects: imported.data.projects || [],
+            optimizer: {
+              boards: imported.data.optimizer?.boards || [],
+              parts: imported.data.optimizer?.parts || []
+            },
+            generator: {
+              savedIdeas: imported.data.generator?.savedIdeas || []
+            }
+          };
+          await clearAllMedia();
+          if (Array.isArray(imported.media)) {
+            for (const item of imported.media) {
+              await putMediaRecord({
+                ...item,
+                fullBlob: item.fullDataUrl ? dataUrlToBlob(item.fullDataUrl) : item.fullBlob
+              });
+            }
+          }
         }
-      };
-      reader.readAsText(file);
+        saveState();
+        renderAll();
+        await renderProjectMediaGallery();
+        alert('Data imported successfully.');
+      } catch (err) {
+        console.error(err);
+        alert('Could not import that file.');
+      }
     }
 
-    function resetAll() {
+    async function resetAll() {
       if (!confirm('Reset all saved projects, boards, parts, and saved project ideas?')) return;
       state = structuredClone(defaultState);
+      await clearAllMedia();
       saveState();
       clearProjectForm();
       renderAll();
@@ -1857,6 +2352,7 @@
       renderProjects();
       renderBoardsAndParts();
       renderSavedIdeas();
+      renderProjectMediaGallery();
     }
 
     renderJoineryChips('projectJoineryChips', joineryOptions);
@@ -1884,9 +2380,11 @@
     el('runJoineryBtn').addEventListener('click', runJoinerySelector);
     el('generateProjectsBtn').addEventListener('click', () => runProjectGenerator(3));
     el('surpriseProjectBtn').addEventListener('click', () => runProjectGenerator(1));
+    el('saveMediaBtn').addEventListener('click', handleMediaUpload);
+    el('refreshMediaBtn').addEventListener('click', renderProjectMediaGallery);
     el('exportDataBtn').addEventListener('click', exportData);
     el('importFile').addEventListener('change', (e) => importData(e.target.files[0]));
-    el('resetAllBtn').addEventListener('click', resetAll);
+    el('resetAllBtn').addEventListener('click', () => resetAll());
   </script>
 </body>
 </html>
