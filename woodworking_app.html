@@ -336,7 +336,7 @@
   <div class="app">
     <section class="hero">
       <h1>Woodworking Workshop Companion</h1>
-      <p>A single-page woodworking app with a project tracker, cut list optimizer, and joinery selector. Everything saves locally in your browser, and you can export or import your data whenever you want.</p>
+      <p>A single-page woodworking app with a project tracker, cut list optimizer, joinery selector, and random project generator. Everything saves locally in your browser, and you can export or import your data whenever you want.</p>
     </section>
 
     <section class="toolbar">
@@ -345,6 +345,7 @@
           <button class="tab-btn active" data-tab="tracker">Project Tracker</button>
           <button class="tab-btn" data-tab="optimizer">Cut List Optimizer</button>
           <button class="tab-btn" data-tab="joinery">Joinery Selector</button>
+          <button class="tab-btn" data-tab="generator">Random Project Generator</button>
         </div>
       </div>
       <div class="toolbar-right">
@@ -605,6 +606,87 @@
         </div>
       </div>
     </section>
+
+    <section id="generator" class="tab-panel">
+      <div class="grid grid-2">
+        <div class="panel">
+          <h2>Random Project Generator</h2>
+          <p class="muted">Great for short shop windows. Enter the time you have, bias toward the kind of work you want to practice, and get a few realistic project ideas.</p>
+          <div class="form-grid">
+            <label>Time Available (hours)
+              <input id="generatorHours" type="number" min="0.5" step="0.5" value="2" />
+            </label>
+            <label>Tool Style
+              <select id="generatorToolStyle">
+                <option value="any" selected>Any</option>
+                <option value="hand">Hand-tool friendly</option>
+                <option value="power">Machine / power tool friendly</option>
+                <option value="mixed">Mixed shop</option>
+              </select>
+            </label>
+            <label>Skill Focus
+              <select id="generatorSkillFocus">
+                <option value="any" selected>Any</option>
+                <option value="joinery">Joinery</option>
+                <option value="accuracy">Accuracy & setup</option>
+                <option value="finishing">Finishing</option>
+                <option value="shaping">Shaping & curves</option>
+                <option value="organization">Shop organization</option>
+                <option value="design">Design thinking</option>
+                <option value="small-furniture">Small furniture</option>
+              </select>
+            </label>
+            <label>Challenge Level
+              <select id="generatorDifficulty">
+                <option value="any" selected>Any</option>
+                <option value="easy">Easy win</option>
+                <option value="moderate">Moderate</option>
+                <option value="stretch">Stretch me a bit</option>
+              </select>
+            </label>
+            <label>Material Situation
+              <select id="generatorMaterial">
+                <option value="any" selected>Any</option>
+                <option value="scrap">Use scraps / offcuts</option>
+                <option value="hardwood">Solid wood</option>
+                <option value="sheet">Sheet goods</option>
+                <option value="hardware">Hardware-heavy project</option>
+              </select>
+            </label>
+            <label>Project Type
+              <select id="generatorType">
+                <option value="any" selected>Any</option>
+                <option value="shop">Shop aid</option>
+                <option value="home">Home accessory</option>
+                <option value="component">Furniture component / practice piece</option>
+                <option value="furniture">Small furniture</option>
+              </select>
+            </label>
+          </div>
+
+          <label style="margin-top:14px;">
+            <span class="checkbox-chip">
+              <input id="generatorShortOnly" type="checkbox" />
+              <span>Prioritize short-window projects (especially useful for 2 hours or less)</span>
+            </span>
+          </label>
+
+          <div class="actions">
+            <button id="generateProjectsBtn" type="button" class="primary">Generate 3 Ideas</button>
+            <button id="surpriseProjectBtn" type="button" class="secondary">Surprise Me</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Generated Ideas</h2>
+          <div id="generatorResults" class="empty">Enter your constraints, then click <strong>Generate 3 Ideas</strong>.</div>
+
+          <h3 style="margin-top:18px;">Saved Ideas</h3>
+          <p class="muted">Keep a shortlist for the next time you suddenly have an hour or two in the shop.</p>
+          <div id="savedProjectIdeas" class="results-list"></div>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script>
@@ -620,11 +702,407 @@
       'Hand Saw', 'Domino', 'Dowel Jig', 'Pocket Hole Jig', 'Band Saw', 'Planer/Jointer'
     ];
 
+    const randomProjectIdeas = [
+      {
+        id: 'bench-hook',
+        name: 'Bench Hook',
+        minHours: 0.5,
+        maxHours: 1.5,
+        toolStyle: 'hand',
+        skillTags: ['accuracy', 'organization'],
+        type: 'shop',
+        difficulty: 1,
+        material: 'scrap',
+        shortWindow: true,
+        materials: 'Hardwood offcuts, glue, optional screws',
+        description: 'A classic quick build that improves crosscutting safety and gives you a useful hand-tool appliance.',
+        firstSteps: 'Pick a flat base, square the fences, and focus on layout accuracy.'
+      },
+      {
+        id: 'push-sticks',
+        name: 'Custom Push Sticks or Push Blocks',
+        minHours: 0.5,
+        maxHours: 1,
+        toolStyle: 'power',
+        skillTags: ['organization', 'accuracy'],
+        type: 'shop',
+        difficulty: 1,
+        material: 'scrap',
+        shortWindow: true,
+        materials: 'Plywood or hardwood scraps',
+        description: 'A fast, practical project that makes every future machine session safer.',
+        firstSteps: 'Trace a comfortable handle profile and make a couple of variants for different cuts.'
+      },
+      {
+        id: 'finish-sample-board',
+        name: 'Finish Sample Board',
+        minHours: 1,
+        maxHours: 2,
+        toolStyle: 'mixed',
+        skillTags: ['finishing', 'design'],
+        type: 'component',
+        difficulty: 1,
+        material: 'hardwood',
+        shortWindow: true,
+        materials: 'One board and the finishes you already own',
+        description: 'Build a reference board with different sanding grits and finish schedules for future furniture work.',
+        firstSteps: 'Mask off sections, label everything clearly, and test the exact products you use.'
+      },
+      {
+        id: 'winding-sticks',
+        name: 'Winding Sticks',
+        minHours: 1,
+        maxHours: 2,
+        toolStyle: 'hand',
+        skillTags: ['accuracy'],
+        type: 'shop',
+        difficulty: 1,
+        material: 'hardwood',
+        shortWindow: true,
+        materials: 'Straight-grained hardwood offcuts',
+        description: 'A compact precision project that sharpens your milling eye and gives you a lasting setup aid.',
+        firstSteps: 'Mill two matching blanks and concentrate on making their top edges dead straight and parallel.'
+      },
+      {
+        id: 'chisel-rack',
+        name: 'Wall-Mounted Chisel Rack',
+        minHours: 1,
+        maxHours: 2,
+        toolStyle: 'mixed',
+        skillTags: ['organization', 'accuracy'],
+        type: 'shop',
+        difficulty: 1,
+        material: 'scrap',
+        shortWindow: true,
+        materials: 'Scrap hardwood or plywood, screws',
+        description: 'A clean little project that buys back shop time by keeping edge tools visible and protected.',
+        firstSteps: 'Measure actual chisel handles, lay out spacing, and decide whether you want slots or magnets.'
+      },
+      {
+        id: 'sanding-caddy',
+        name: 'Sandpaper / Abrasives Caddy',
+        minHours: 1,
+        maxHours: 2.5,
+        toolStyle: 'power',
+        skillTags: ['organization'],
+        type: 'shop',
+        difficulty: 1,
+        material: 'sheet',
+        shortWindow: true,
+        materials: 'Plywood offcuts, glue, brads',
+        description: 'A low-risk build that helps tame finishing chaos and makes abrasive selection faster.',
+        firstSteps: 'Choose whether you want upright dividers, drawers, or a wall rack.'
+      },
+      {
+        id: 'shop-stool',
+        name: 'Small Shop Stool',
+        minHours: 3,
+        maxHours: 5,
+        toolStyle: 'mixed',
+        skillTags: ['joinery', 'small-furniture'],
+        type: 'furniture',
+        difficulty: 2,
+        material: 'hardwood',
+        shortWindow: false,
+        materials: 'Solid wood, glue',
+        description: 'A compact furniture build that lets you practice legs, aprons, and a strong base.',
+        firstSteps: 'Pick a comfortable height and decide between simple stretchers, dowels, or mortise-and-tenon.'
+      },
+      {
+        id: 'picture-frame',
+        name: 'Picture Frame',
+        minHours: 1.5,
+        maxHours: 3,
+        toolStyle: 'mixed',
+        skillTags: ['accuracy', 'finishing'],
+        type: 'home',
+        difficulty: 1,
+        material: 'hardwood',
+        shortWindow: true,
+        materials: 'Thin stock, backing, hanging hardware',
+        description: 'Excellent for precision mitres and clean finishing with a useful end result.',
+        firstSteps: 'Start from the artwork size, then work backward to frame width, rabbet depth, and mitre setup.'
+      },
+      {
+        id: 'keyshelf',
+        name: 'Wall Key Shelf with Hooks',
+        minHours: 2,
+        maxHours: 3,
+        toolStyle: 'mixed',
+        skillTags: ['small-furniture', 'finishing'],
+        type: 'home',
+        difficulty: 1,
+        material: 'hardware',
+        shortWindow: true,
+        materials: 'Solid wood, hooks, screws',
+        description: 'A satisfying small household piece with layout, edge treatment, and finish in one session.',
+        firstSteps: 'Decide the number of hooks first, then size the shelf and add a simple profile.'
+      },
+      {
+        id: 'small-keepsake-box',
+        name: 'Small Keepsake Box',
+        minHours: 2,
+        maxHours: 4,
+        toolStyle: 'mixed',
+        skillTags: ['joinery', 'finishing'],
+        type: 'home',
+        difficulty: 2,
+        material: 'hardwood',
+        shortWindow: false,
+        materials: 'Fine hardwood, optional hinges or liner',
+        description: 'A compact but skill-rich project with joinery, lid fit, and finishing details.',
+        firstSteps: 'Choose your corner joint first: mitred spline, box joint, or tiny dovetails.'
+      },
+      {
+        id: 'drawer-organizer',
+        name: 'Drawer Organizer Trays',
+        minHours: 1,
+        maxHours: 2.5,
+        toolStyle: 'power',
+        skillTags: ['organization', 'accuracy'],
+        type: 'home',
+        difficulty: 1,
+        material: 'sheet',
+        shortWindow: true,
+        materials: 'Thin plywood or solid scraps',
+        description: 'Fast, practical, and ideal for batching several trays from offcuts.',
+        firstSteps: 'Measure the drawer interior carefully and leave a little seasonal tolerance.'
+      },
+      {
+        id: 'floating-shelf',
+        name: 'Floating Shelf',
+        minHours: 2,
+        maxHours: 4,
+        toolStyle: 'power',
+        skillTags: ['small-furniture', 'accuracy'],
+        type: 'home',
+        difficulty: 2,
+        material: 'hardware',
+        shortWindow: false,
+        materials: 'Solid wood or veneered panel, hidden brackets',
+        description: 'Good practice for straightness, wall tolerances, and clean edge treatment.',
+        firstSteps: 'Choose the bracket system first so your shelf thickness and mounting method fit it.'
+      },
+      {
+        id: 'dovetail-practice',
+        name: 'Dovetail Practice Drawer Corner',
+        minHours: 1,
+        maxHours: 2,
+        toolStyle: 'hand',
+        skillTags: ['joinery'],
+        type: 'component',
+        difficulty: 2,
+        material: 'scrap',
+        shortWindow: true,
+        materials: 'Small straight-grained offcuts',
+        description: 'A focused practice piece that improves sawing, chopping, and fit without committing to a full drawer.',
+        firstSteps: 'Cut two or three corners only, and keep notes on baseline placement and fit.'
+      },
+      {
+        id: 'mortise-tenon-practice',
+        name: 'Mortise & Tenon Practice Frame',
+        minHours: 1.5,
+        maxHours: 3,
+        toolStyle: 'mixed',
+        skillTags: ['joinery'],
+        type: 'component',
+        difficulty: 2,
+        material: 'scrap',
+        shortWindow: true,
+        materials: 'Straight stock, marking gauge, glue optional',
+        description: 'A high-value practice piece for table or chair work without building full furniture.',
+        firstSteps: 'Mill four rails/stiles and aim for repeatability rather than complexity.'
+      },
+      {
+        id: 'cabinet-door-mockup',
+        name: 'Frame-and-Panel Door Mockup',
+        minHours: 2,
+        maxHours: 4,
+        toolStyle: 'power',
+        skillTags: ['joinery', 'design'],
+        type: 'component',
+        difficulty: 2,
+        material: 'hardwood',
+        shortWindow: false,
+        materials: 'Rails, stiles, panel stock',
+        description: 'A useful furniture component build that teaches groove layout, panel sizing, and wood movement thinking.',
+        firstSteps: 'Start with a small sample door and test your groove-to-panel fit before making a full one.'
+      },
+      {
+        id: 'shooting-board',
+        name: 'Shooting Board',
+        minHours: 1,
+        maxHours: 2.5,
+        toolStyle: 'hand',
+        skillTags: ['accuracy'],
+        type: 'shop',
+        difficulty: 1,
+        material: 'sheet',
+        shortWindow: true,
+        materials: 'Stable plywood or MDF plus hardwood fence',
+        description: 'A precision aid that makes edge and end-grain tuning much easier on later furniture work.',
+        firstSteps: 'Build around your preferred plane and keep the fence dead square.'
+      },
+      {
+        id: 'coat-rack',
+        name: 'Wall Coat Rack',
+        minHours: 2,
+        maxHours: 3.5,
+        toolStyle: 'mixed',
+        skillTags: ['small-furniture', 'finishing'],
+        type: 'home',
+        difficulty: 1,
+        material: 'hardware',
+        shortWindow: true,
+        materials: 'One board, hooks or pegs, finish',
+        description: 'A practical home project with easy customization through shape, pegs, and finish choices.',
+        firstSteps: 'Choose hook spacing and mounting first, then work on the board profile.'
+      },
+      {
+        id: 'plant-stand',
+        name: 'Small Plant Stand',
+        minHours: 2.5,
+        maxHours: 4,
+        toolStyle: 'mixed',
+        skillTags: ['small-furniture', 'joinery'],
+        type: 'furniture',
+        difficulty: 2,
+        material: 'hardwood',
+        shortWindow: false,
+        materials: 'Solid wood, glue',
+        description: 'A manageable furniture-scale project that teaches stance, proportions, and base joinery.',
+        firstSteps: 'Sketch two or three proportions before cutting stock so the piece feels intentional.'
+      },
+      {
+        id: 'router-bit-cabinet',
+        name: 'Router Bit Storage Block',
+        minHours: 1,
+        maxHours: 2,
+        toolStyle: 'power',
+        skillTags: ['organization'],
+        type: 'shop',
+        difficulty: 1,
+        material: 'scrap',
+        shortWindow: true,
+        materials: 'Hardwood scrap, drill bits, labels',
+        description: 'Quick to make and immediately useful if your small tooling is getting scattered.',
+        firstSteps: 'Lay out hole sizes first and leave finger clearance around larger bits.'
+      },
+      {
+        id: 'serving-board',
+        name: 'Serving Board / Charcuterie Board',
+        minHours: 1.5,
+        maxHours: 3,
+        toolStyle: 'mixed',
+        skillTags: ['shaping', 'finishing'],
+        type: 'home',
+        difficulty: 1,
+        material: 'hardwood',
+        shortWindow: true,
+        materials: 'Attractive hardwood offcut, food-safe finish',
+        description: 'A forgiving project that lets you practice curves, edge detail, sanding, and finish quality.',
+        firstSteps: 'Choose the blank based on grain and color, then refine the silhouette.'
+      },
+      {
+        id: 'drill-bit-index',
+        name: 'Drill Bit Index Rack',
+        minHours: 0.75,
+        maxHours: 1.5,
+        toolStyle: 'power',
+        skillTags: ['organization', 'accuracy'],
+        type: 'shop',
+        difficulty: 1,
+        material: 'scrap',
+        shortWindow: true,
+        materials: 'Scrap hardwood or plywood',
+        description: 'A micro-project that is perfect for very short windows and sharpens layout discipline.',
+        firstSteps: 'Group sizes logically and label before final drilling to avoid mixups.'
+      },
+      {
+        id: 'edge-profile-sample',
+        name: 'Edge Profile & Chamfer Sample Stick',
+        minHours: 0.5,
+        maxHours: 1.5,
+        toolStyle: 'mixed',
+        skillTags: ['design', 'shaping'],
+        type: 'component',
+        difficulty: 1,
+        material: 'scrap',
+        shortWindow: true,
+        materials: 'One straight offcut',
+        description: 'Create a tactile reference stick with different edge treatments for future furniture decisions.',
+        firstSteps: 'Put one profile per section and label the tools or router bits used.'
+      },
+      {
+        id: 'nightstand-mockup',
+        name: 'Nightstand Design Mockup',
+        minHours: 2,
+        maxHours: 4,
+        toolStyle: 'mixed',
+        skillTags: ['design', 'small-furniture'],
+        type: 'component',
+        difficulty: 2,
+        material: 'sheet',
+        shortWindow: false,
+        materials: 'Cheap sheet goods or construction lumber',
+        description: 'A prototype-driven session that helps you test proportions and construction before committing to nice timber.',
+        firstSteps: 'Mock up full dimensions quickly and evaluate shelf height, drawer proportion, and stance.'
+      },
+      {
+        id: 'frame-bridle-practice',
+        name: 'Bridle Joint Frame',
+        minHours: 1.5,
+        maxHours: 3,
+        toolStyle: 'mixed',
+        skillTags: ['joinery'],
+        type: 'component',
+        difficulty: 2,
+        material: 'scrap',
+        shortWindow: true,
+        materials: 'Straight-grained offcuts',
+        description: 'A useful visible-joinery exercise for frames, stools, and table bases.',
+        firstSteps: 'Aim for crisp shoulders and an even reveal rather than a complicated frame shape.'
+      },
+      {
+        id: 'small-wall-shelf',
+        name: 'Small Wall Shelf',
+        minHours: 1.5,
+        maxHours: 3,
+        toolStyle: 'mixed',
+        skillTags: ['small-furniture', 'accuracy'],
+        type: 'home',
+        difficulty: 1,
+        material: 'hardwood',
+        shortWindow: true,
+        materials: 'One board, brackets or simple joinery',
+        description: 'Simple enough for a short session but still teaches layout, square cuts, and finish choices.',
+        firstSteps: 'Pick location first so depth and mounting method suit the actual use.'
+      },
+      {
+        id: 'jewelry-tray',
+        name: 'Jewelry / Catch-All Tray',
+        minHours: 1.5,
+        maxHours: 3,
+        toolStyle: 'hand',
+        skillTags: ['shaping', 'finishing'],
+        type: 'home',
+        difficulty: 1,
+        material: 'hardwood',
+        shortWindow: true,
+        materials: 'A nice offcut and finish',
+        description: 'A compact project with plenty of room to explore subtle shaping and surface quality.',
+        firstSteps: 'Decide whether you want faceted sides, carved recesses, or a simple chamfered profile.'
+      }
+    ];
+
     const defaultState = {
       projects: [],
       optimizer: {
         boards: [],
         parts: []
+      },
+      generator: {
+        savedIdeas: []
       }
     };
 
@@ -640,6 +1118,9 @@
           optimizer: {
             boards: parsed.optimizer?.boards || [],
             parts: parsed.optimizer?.parts || []
+          },
+          generator: {
+            savedIdeas: parsed.generator?.savedIdeas || []
           }
         };
       } catch (err) {
@@ -1179,6 +1660,141 @@
       }).join('');
     }
 
+
+    function difficultyValue(level) {
+      return level === 'easy' ? 1 : level === 'moderate' ? 2 : 3;
+    }
+
+    function ideaDifficultyLabel(value) {
+      return value === 1 ? 'Easy win' : value === 2 ? 'Moderate' : 'Stretch';
+    }
+
+    function typeLabel(value) {
+      return value === 'shop' ? 'Shop aid'
+        : value === 'home' ? 'Home accessory'
+        : value === 'component' ? 'Furniture component / practice piece'
+        : 'Small furniture';
+    }
+
+    function toolStyleLabel(value) {
+      return value === 'hand' ? 'Hand-tool friendly'
+        : value === 'power' ? 'Machine / power tool friendly'
+        : 'Mixed shop';
+    }
+
+    function getGeneratorMatches(limit = 3) {
+      const hours = Number(el('generatorHours').value) || 2;
+      const toolStyle = el('generatorToolStyle').value;
+      const skillFocus = el('generatorSkillFocus').value;
+      const difficulty = el('generatorDifficulty').value;
+      const material = el('generatorMaterial').value;
+      const type = el('generatorType').value;
+      const shortOnly = el('generatorShortOnly').checked;
+
+      const scored = randomProjectIdeas.map(idea => {
+        let score = 0;
+
+        const center = (idea.minHours + idea.maxHours) / 2;
+        const rangeFit = hours >= idea.minHours && hours <= idea.maxHours;
+        const nearFit = hours >= idea.minHours - 0.75 && hours <= idea.maxHours + 0.75;
+
+        if (rangeFit) score += 8;
+        else if (nearFit) score += 4;
+        else score -= Math.min(6, Math.abs(center - hours) * 2);
+
+        if (toolStyle === 'any' || idea.toolStyle === toolStyle || idea.toolStyle === 'mixed') score += 2;
+        if (skillFocus === 'any' || idea.skillTags.includes(skillFocus)) score += 3;
+        if (difficulty === 'any' || idea.difficulty === difficultyValue(difficulty)) score += 2.5;
+        if (material === 'any' || idea.material === material) score += 2;
+        if (type === 'any' || idea.type === type) score += 2;
+        if ((shortOnly || hours <= 2) && idea.shortWindow) score += 3;
+        if ((shortOnly || hours <= 2) && !idea.shortWindow) score -= 2;
+
+        score += Math.random() * 1.2;
+
+        return { ...idea, score };
+      }).sort((a, b) => b.score - a.score);
+
+      return scored.slice(0, Math.min(limit, scored.length));
+    }
+
+    function renderIdeaCard(idea, showSave = true) {
+      const saveButton = showSave
+        ? `<button type="button" onclick="saveGeneratedIdea('${idea.id}')">Save Idea</button>`
+        : '';
+      return `
+        <article class="card">
+          <div class="card-header">
+            <div>
+              <h4>${escapeHtml(idea.name)}</h4>
+              <div class="small muted">${typeLabel(idea.type)} • ${toolStyleLabel(idea.toolStyle)} • ${idea.minHours}–${idea.maxHours} h</div>
+            </div>
+            <span class="badge ${idea.shortWindow ? 'good' : ''}">${ideaDifficultyLabel(idea.difficulty)}</span>
+          </div>
+          <div class="pill-row">
+            ${idea.skillTags.map(tag => `<span class="pill">${escapeHtml(tag)}</span>`).join('')}
+            <span class="pill">${escapeHtml(idea.material)}</span>
+            ${idea.shortWindow ? '<span class="pill">short-window friendly</span>' : ''}
+          </div>
+          <p><strong>Why it fits:</strong> ${escapeHtml(idea.description)}</p>
+          <p><strong>Materials:</strong> ${escapeHtml(idea.materials)}</p>
+          <p><strong>First steps:</strong> ${escapeHtml(idea.firstSteps)}</p>
+          ${saveButton ? `<div class="actions" style="margin-top:10px;">${saveButton}</div>` : ''}
+        </article>
+      `;
+    }
+
+    function runProjectGenerator(limit = 3) {
+      const matches = getGeneratorMatches(limit);
+      if (!matches.length) {
+        el('generatorResults').className = 'empty';
+        el('generatorResults').innerHTML = 'No ideas matched your filters.';
+        return;
+      }
+
+      el('generatorResults').className = 'results-list';
+      el('generatorResults').innerHTML = matches.map((idea, index) => `
+        ${index === 0 ? `<div class="small muted" style="margin-bottom:-2px;">Best fit for your current window</div>` : ''}
+        ${renderIdeaCard(idea, true)}
+      `).join('');
+    }
+
+    function renderSavedIdeas() {
+      const saved = state.generator?.savedIdeas || [];
+      el('savedProjectIdeas').innerHTML = saved.length
+        ? saved.map(idea => `
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <h4>${escapeHtml(idea.name)}</h4>
+                <div class="small muted">${typeLabel(idea.type)} • ${idea.minHours}–${idea.maxHours} h</div>
+              </div>
+              <button class="danger" type="button" onclick="removeSavedIdea('${idea.id}')">Remove</button>
+            </div>
+            <p class="small muted">${escapeHtml(idea.description)}</p>
+          </article>
+        `).join('')
+        : '<div class="empty">No saved ideas yet.</div>';
+    }
+
+    window.saveGeneratedIdea = function(id) {
+      const idea = randomProjectIdeas.find(item => item.id === id);
+      if (!idea) return;
+      state.generator = state.generator || { savedIdeas: [] };
+      if (!state.generator.savedIdeas.some(item => item.id === id)) {
+        state.generator.savedIdeas.push(idea);
+        saveState();
+        renderSavedIdeas();
+      }
+    }
+
+    window.removeSavedIdea = function(id) {
+      state.generator.savedIdeas = (state.generator.savedIdeas || []).filter(item => item.id !== id);
+      saveState();
+      renderSavedIdeas();
+    }
+
+
     function exportData() {
       const payload = {
         exportedAt: new Date().toISOString(),
@@ -1206,6 +1822,9 @@
             optimizer: {
               boards: imported.data.optimizer?.boards || [],
               parts: imported.data.optimizer?.parts || []
+            },
+            generator: {
+              savedIdeas: imported.data.generator?.savedIdeas || []
             }
           };
           saveState();
@@ -1220,7 +1839,7 @@
     }
 
     function resetAll() {
-      if (!confirm('Reset all saved projects, boards, and parts?')) return;
+      if (!confirm('Reset all saved projects, boards, parts, and saved project ideas?')) return;
       state = structuredClone(defaultState);
       saveState();
       clearProjectForm();
@@ -1230,11 +1849,14 @@
       el('optimizerResults').innerHTML = '';
       el('joineryResults').className = 'empty';
       el('joineryResults').innerHTML = 'Choose your constraints, then click <strong>Recommend Joinery</strong>.';
+      el('generatorResults').className = 'empty';
+      el('generatorResults').innerHTML = 'Enter your constraints, then click <strong>Generate 3 Ideas</strong>.';
     }
 
     function renderAll() {
       renderProjects();
       renderBoardsAndParts();
+      renderSavedIdeas();
     }
 
     renderJoineryChips('projectJoineryChips', joineryOptions);
@@ -1260,6 +1882,8 @@
     });
     el('unitLabel').addEventListener('change', renderBoardsAndParts);
     el('runJoineryBtn').addEventListener('click', runJoinerySelector);
+    el('generateProjectsBtn').addEventListener('click', () => runProjectGenerator(3));
+    el('surpriseProjectBtn').addEventListener('click', () => runProjectGenerator(1));
     el('exportDataBtn').addEventListener('click', exportData);
     el('importFile').addEventListener('change', (e) => importData(e.target.files[0]));
     el('resetAllBtn').addEventListener('click', resetAll);
