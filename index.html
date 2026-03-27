@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Woodworking Workshop Companion</title>
+  <meta name="theme-color" content="#7a4b24" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Workshop Companion" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
   <style>
     :root {
       --bg: #f5f1ea;
@@ -2386,5 +2395,17 @@
     el('importFile').addEventListener('change', (e) => importData(e.target.files[0]));
     el('resetAllBtn').addEventListener('click', () => resetAll());
   </script>
+
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js').catch((err) => {
+          console.error('Service worker registration failed:', err);
+        });
+      });
+    }
+  </script>
+
 </body>
 </html>
