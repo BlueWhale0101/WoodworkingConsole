@@ -5,2977 +5,1114 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Woodworking Workshop Companion</title>
   <meta name="theme-color" content="#7a4b24" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Workshop Companion" />
-  <meta name="mobile-web-app-capable" content="yes" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
-
   <style>
-    :root {
-      --bg: #f5f1ea;
-      --panel: #fffdf9;
-      --ink: #2b241d;
-      --muted: #6e6256;
-      --line: #d8cfc4;
-      --accent: #7a4b24;
-      --accent-2: #a56c3a;
-      --good: #2f6b3b;
-      --warn: #9a5b14;
-      --bad: #8a2c2c;
-      --shadow: 0 8px 24px rgba(54, 38, 21, 0.08);
-      --radius: 16px;
+    :root{
+      --bg:#f5f1ea; --panel:#fffdf9; --ink:#2b241d; --muted:#6e6256; --line:#d8cfc4;
+      --accent:#7a4b24; --accent2:#a56c3a; --good:#2f6b3b; --warn:#9a5b14; --bad:#8a2c2c;
+      --shadow:0 10px 30px rgba(54,38,21,.08); --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:linear-gradient(180deg,#efe7dc 0%, var(--bg) 220px);}
+    .app{max-width:1180px;margin:0 auto;padding:18px}
+    .hero{background:linear-gradient(135deg,rgba(122,75,36,.98),rgba(58,35,18,.96));color:#fff;padding:24px;border-radius:24px;box-shadow:var(--shadow);margin-bottom:16px}
+    .hero h1{margin:0 0 8px;font-size:clamp(1.5rem,3vw,2.3rem)}
+    .hero p{margin:0;color:rgba(255,255,255,.9);line-height:1.5;max-width:850px}
+    .toolbar,.panel,.card,.detail-shell,.modal-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .toolbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px;margin-bottom:18px}
+    .toolbar-left,.toolbar-right,.tab-list,.inline-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    button,.file-label,.tab-btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:10px 14px;font:inherit;cursor:pointer;transition:.15s ease}
+    button:hover,.file-label:hover,.tab-btn:hover{transform:translateY(-1px);border-color:var(--accent2)}
+    .primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    .secondary{background:#f6f0e8}
+    .danger{background:#fff3f2;border-color:#e4b9b3;color:#7a1f1f}
+    .good{background:#eef8f0;border-color:#b9d8c0;color:#21552c}
+    .tab-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+    .grid{display:grid;gap:18px}
+    .grid-2{grid-template-columns:1.15fr .85fr}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
+    .panel{padding:18px}
+    .muted{color:var(--muted)}
+    .small{font-size:.92rem}
+    .form-grid,.form-grid-3{display:grid;gap:12px}
+    .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .form-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    label{display:flex;flex-direction:column;gap:6px;font-size:.95rem}
+    input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;font:inherit;background:#fff;color:var(--ink)}
+    textarea{min-height:96px;resize:vertical}
+    input[type="checkbox"]{width:auto}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .checkbox-group,.pill-row,.stat-row,.meta{display:flex;gap:8px;flex-wrap:wrap}
+    .checkbox-chip,.pill,.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:.92rem}
+    .badge{font-weight:600}
+    .badge.planning{background:#fff8ec;color:#8a5a00}
+    .badge.progress{background:#eef8f0;color:#21552c}
+    .badge.finished{background:#eef4ff;color:#284c8f}
+    .badge.hold{background:#fff1f1;color:#8a2c2c}
+    .card-list{display:grid;gap:14px}
+    .card{padding:16px}
+    .card-header{display:flex;justify-content:space-between;gap:12px;align-items:start}
+    .card h4{margin:0 0 4px}
+    .card-cover{width:100%;aspect-ratio:16/8;object-fit:cover;border-radius:12px;margin:0 0 12px;border:1px solid var(--line);background:#f0e8de}
+    .empty{padding:24px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);text-align:center}
+    .detail-shell{padding:0;overflow:hidden}
+    .detail-header{padding:18px;background:linear-gradient(180deg,#fffdf9,#f7f0e8)}
+    .detail-header-main{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+    .detail-cover{margin-top:14px;width:100%;aspect-ratio:16/6;object-fit:cover;border-radius:16px;background:#eadfce;border:1px solid var(--line)}
+    .quick-actions{position:sticky;top:0;z-index:4;display:flex;gap:10px;flex-wrap:wrap;padding:12px 18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(255,253,249,.96);backdrop-filter:blur(8px)}
+    .detail-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;padding:18px}
+    .section{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+    .section-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;cursor:pointer;background:#fcfaf7}
+    .section-header h3{margin:0;font-size:1rem}
+    .section-body{padding:16px}
+    .section-body.collapsed{display:none}
+    .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+    .thumb-card{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+    .thumb-card img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;cursor:pointer;background:#f1e7db}
+    .thumb-meta{padding:10px}
+    .thumb-meta .actions{margin-top:10px}
+    .plan-row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);align-items:center}
+    .plan-row:first-child{border-top:none;padding-top:0}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
+    .modal.open{display:flex}
+    .modal-card{max-width:min(960px,96vw);max-height:92vh;width:100%;background:#111;border:none;position:relative;padding:18px;color:#fff}
+    .viewer-stage{color:rgba(255,255,255,.75);font-size:.92rem}
+    .viewer-image{display:block;width:100%;max-height:72vh;object-fit:contain;border-radius:12px;background:#000}
+    .viewer-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.14);border:none;color:#fff;font-size:1.7rem;padding:12px 14px}
+    .viewer-prev{left:10px}.viewer-next{right:10px}
+    .viewer-close{position:absolute;top:10px;right:10px}
+    .viewer-bar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap}
+    .install-banner{display:none;margin-top:12px;padding:12px 14px;border-radius:12px;background:#fff3e7;border:1px solid #efcfaa}
+    .idea-card{border:1px solid var(--line);border-radius:14px;background:#fff;padding:14px}
+    .cut-board{border:1px dashed var(--line);border-radius:12px;padding:10px;background:#fcfaf7}
+    .footer-note{margin-top:8px;color:var(--muted);font-size:.9rem}
+    @media (max-width:900px){
+      .grid-2,.detail-grid{grid-template-columns:1fr}
+      .grid-3,.form-grid-3{grid-template-columns:1fr}
+    }
+    @media (max-width:640px){
+      .app{padding:12px}
+      .toolbar,.panel,.card,.detail-header,.quick-actions,.section-body{padding-left:14px;padding-right:14px}
+      .form-grid{grid-template-columns:1fr}
+      .gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
-
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--ink);
-      background: linear-gradient(180deg, #efe7dc 0%, var(--bg) 240px);
-    }
-
-    .app {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-
-    .hero {
-      background: linear-gradient(135deg, rgba(122,75,36,0.98), rgba(58,35,18,0.96));
-      color: #fff;
-      padding: 26px;
-      border-radius: 24px;
-      box-shadow: var(--shadow);
-      margin-bottom: 18px;
-    }
-
-    .hero h1 {
-      margin: 0 0 8px;
-      font-size: clamp(1.6rem, 3vw, 2.5rem);
-    }
-
-    .hero p {
-      margin: 0;
-      max-width: 840px;
-      line-height: 1.5;
-      color: rgba(255,255,255,0.88);
-    }
-
-    .toolbar, .panel, .card {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px;
-      margin-bottom: 18px;
-    }
-
-    .toolbar-left, .toolbar-right, .tab-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .tab-btn, button, .file-label {
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--ink);
-      border-radius: 12px;
-      padding: 10px 14px;
-      font: inherit;
-      cursor: pointer;
-      transition: 0.18s ease;
-    }
-
-    .tab-btn:hover, button:hover, .file-label:hover {
-      transform: translateY(-1px);
-      border-color: var(--accent-2);
-    }
-
-    .tab-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    .grid {
-      display: grid;
-      gap: 18px;
-    }
-
-    .grid-2 {
-      grid-template-columns: 1.1fr 0.9fr;
-    }
-
-    .grid-3 {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
-    .panel {
-      padding: 18px;
-    }
-
-    .panel h2, .panel h3 {
-      margin: 0 0 12px;
-    }
-
-    .muted {
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .form-grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    label {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      font-size: 0.95rem;
-      color: var(--ink);
-    }
-
-    input, select, textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 11px 12px;
-      font: inherit;
-      background: #fff;
-      color: var(--ink);
-    }
-
-    textarea { min-height: 96px; resize: vertical; }
-    input[type="checkbox"] { width: auto; }
-
-    .checkbox-group, .pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 4px;
-    }
-
-    .checkbox-chip, .pill {
-      border: 1px solid var(--line);
-      background: #fff;
-      border-radius: 999px;
-      padding: 8px 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.92rem;
-    }
-
-    .checkbox-chip input { margin: 0; }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    .secondary {
-      background: #f7f1ea;
-    }
-
-    .danger {
-      background: #fff5f5;
-      border-color: #e6b8b8;
-      color: var(--bad);
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .stat {
-      padding: 16px;
-      border-radius: 16px;
-      background: linear-gradient(180deg, #fff, #fbf7f2);
-      border: 1px solid var(--line);
-    }
-
-    .stat .value {
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin-top: 6px;
-    }
-
-    .project-list, .board-list, .part-list, .results-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .card {
-      padding: 16px;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: flex-start;
-      margin-bottom: 10px;
-    }
-
-    .card h4 {
-      margin: 0;
-      font-size: 1.05rem;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      border-radius: 999px;
-      padding: 5px 10px;
-      font-size: 0.82rem;
-      border: 1px solid var(--line);
-      background: #faf6f0;
-      color: var(--muted);
-    }
-
-    .badge.good { background: #edf7ef; color: var(--good); border-color: #bfd9c4; }
-    .badge.warn { background: #fff5e7; color: var(--warn); border-color: #e7c89e; }
-
-    .meta {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px 14px;
-      font-size: 0.93rem;
-      color: var(--muted);
-      margin-bottom: 10px;
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background: #fff;
-    }
-
-    th, td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #ede5db;
-      text-align: left;
-      font-size: 0.95rem;
-      vertical-align: top;
-    }
-
-    th {
-      background: #faf6f0;
-      color: var(--muted);
-      font-weight: 600;
-    }
-
-    .score-bar {
-      height: 10px;
-      border-radius: 999px;
-      background: #efe6da;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-
-    .score-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent-2), var(--accent));
-    }
-
-    .empty {
-      padding: 22px;
-      border: 1px dashed var(--line);
-      border-radius: 16px;
-      color: var(--muted);
-      text-align: center;
-      background: rgba(255,255,255,0.6);
-    }
-
-    .small {
-      font-size: 0.86rem;
-    }
-
-    .hidden-input { display: none; }
-
-    @media (max-width: 960px) {
-      .grid-2, .grid-3, .stats, .form-grid, .form-grid-3 {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .media-toolbar {
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:end;
-      margin: 12px 0;
-    }
-    .media-toolbar label { flex:1 1 180px; }
-    .media-toolbar input[type="file"] { width:100%; }
-    .media-gallery {
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap:12px;
-      margin-top: 12px;
-    }
-    .media-card {
-      border:1px solid var(--line);
-      border-radius:14px;
-      overflow:hidden;
-      background:#fff;
-      display:flex;
-      flex-direction:column;
-      min-height: 100%;
-    }
-    .media-thumb {
-      aspect-ratio: 4 / 3;
-      background:#ece4d7;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-    }
-    .media-thumb img {
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-    .media-body { padding:10px; display:flex; flex-direction:column; gap:8px; }
-    .media-meta { display:flex; gap:6px; flex-wrap:wrap; }
-    .tag {
-      display:inline-flex;
-      align-items:center;
-      gap:4px;
-      border:1px solid var(--line);
-      background:#faf6ef;
-      border-radius:999px;
-      padding:4px 8px;
-      font-size:12px;
-      color:var(--muted);
-    }
-    .cover-badge {
-      background:rgba(47,107,59,0.12);
-      color:var(--good);
-      border-color: rgba(47,107,59,0.2);
-    }
-    .media-actions { display:flex; flex-wrap:wrap; gap:8px; }
-
-    .detail-panel {
-      margin-top: 18px;
-      padding: 0;
-      overflow: hidden;
-    }
-
-    .detail-panel.hidden { display: none; }
-
-    .detail-header {
-      position: relative;
-      background: linear-gradient(135deg, rgba(122,75,36,0.96), rgba(58,35,18,0.94));
-      color: #fff;
-      min-height: 220px;
-      padding: 22px;
-      display: flex;
-      align-items: flex-end;
-      overflow: hidden;
-    }
-
-    .detail-header.has-cover::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      filter: saturate(0.9) brightness(0.6);
-      transform: scale(1.02);
-      z-index: 0;
-    }
-
-    .detail-header > * { position: relative; z-index: 1; }
-
-    .detail-header-content {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      gap: 18px;
-      align-items: end;
-      flex-wrap: wrap;
-    }
-
-    .detail-header h2 {
-      margin: 0 0 8px;
-      color: #fff;
-      font-size: clamp(1.6rem, 4vw, 2.2rem);
-    }
-
-    .detail-header .muted { color: rgba(255,255,255,0.82); }
-
-    .detail-badges, .summary-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .summary-badges { margin-top: 0; }
-
-    .detail-chip {
-      background: rgba(255,255,255,0.13);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: #fff;
-      padding: 7px 10px;
-      border-radius: 999px;
-      font-size: 0.9rem;
-    }
-
-    .quick-actions {
-      position: sticky;
-      top: 10px;
-      z-index: 5;
-      background: rgba(245,241,234,0.96);
-      border-bottom: 1px solid var(--line);
-      padding: 14px 18px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      backdrop-filter: blur(8px);
-    }
-
-    .detail-body {
-      padding: 18px;
-      display: grid;
-      gap: 14px;
-    }
-
-    .detail-summary {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 14px;
-    }
-
-    .summary-card {
-      background: #fffdf9;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 16px;
-    }
-
-    details.detail-section {
-      background: #fffdf9;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    details.detail-section summary {
-      list-style: none;
-      cursor: pointer;
-      padding: 16px 18px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    details.detail-section summary::-webkit-details-marker { display: none; }
-
-    .section-count {
-      color: var(--muted);
-      font-weight: 600;
-      font-size: 0.92rem;
-    }
-
-    .detail-section-body {
-      padding: 0 18px 18px;
-      border-top: 1px solid var(--line);
-    }
-
-    .detail-kv {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .detail-kv div {
-      background: #f8f4ee;
-      border-radius: 12px;
-      padding: 10px;
-      border: 1px solid #eadfce;
-    }
-
-    .detail-kv strong, .specs-list strong { display: block; margin-bottom: 4px; }
-
-    .detail-gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .detail-gallery-card, .plan-card {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: #fff;
-      overflow: hidden;
-    }
-
-    .detail-gallery-card img {
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      object-fit: cover;
-      display: block;
-      background: #e9e1d5;
-    }
-
-    .detail-gallery-card .body, .plan-card .body {
-      padding: 12px;
-      display: grid;
-      gap: 8px;
-    }
-
-    .detail-toolbar {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin-top: 8px;
-    }
-
-    .note-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .note-box {
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px;
-    }
-
-    .note-box h4 { margin: 0 0 8px; }
-
-    .detail-note-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 12px;
-    }
-
-    .plan-icon {
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, #f4eadc, #efe0ca);
-      color: var(--accent);
-      font-size: 2rem;
-      font-weight: 800;
-    }
-
-    .cover-preview {
-      width: 100%;
-      max-height: 240px;
-      object-fit: cover;
-      border-radius: 14px;
-      margin-top: 10px;
-      border: 1px solid var(--line);
-    }
-
-    .empty-inline {
-      padding: 14px;
-      border: 1px dashed var(--line);
-      border-radius: 12px;
-      color: var(--muted);
-      background: #fcfaf7;
-      margin-top: 12px;
-    }
-
-    @media (max-width: 920px) {
-      .detail-summary, .note-grid, .detail-kv { grid-template-columns: 1fr 1fr; }
-    }
-
-    .project-cover {
-      width:100%;
-      height:180px;
-      border-radius:12px;
-      object-fit:cover;
-      margin: 10px 0 2px;
-      border:1px solid var(--line);
-      background:#efe7dc;
-    }
-    .gallery-empty {
-      border:1px dashed var(--line);
-      border-radius:14px;
-      padding:14px;
-      color:var(--muted);
-      background:#fcfaf7;
-    }
-    .hint-box {
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:#fcfaf7;
-      padding:12px 14px;
-      color:var(--muted);
-      margin-top:12px;
-    }
-
   </style>
 </head>
 <body>
-  <div class="app">
-    <section class="hero">
-      <h1>Woodworking Workshop Companion</h1>
-      <p>A single-page woodworking app with a project tracker, cut list optimizer, joinery selector, and random project generator. Everything saves locally in your browser, and you can export or import your data whenever you want.</p>
-    </section>
+<div class="app">
+  <section class="hero">
+    <h1>Woodworking Workshop Companion</h1>
+    <p>Track furniture builds, compare estimated vs actual time, generate project ideas for short windows, optimize rough cut lists, and keep a visual build journal with photos, plans, and structured notes.</p>
+    <div id="installBanner" class="install-banner">This app can be installed from your browser. Use the install button below when it appears.</div>
+  </section>
 
-    <section class="toolbar">
-      <div class="toolbar-left">
-        <div class="tab-list">
-          <button class="tab-btn active" data-tab="tracker">Project Tracker</button>
-          <button class="tab-btn" data-tab="optimizer">Cut List Optimizer</button>
-          <button class="tab-btn" data-tab="joinery">Joinery Selector</button>
-          <button class="tab-btn" data-tab="generator">Random Project Generator</button>
-        </div>
+  <section class="toolbar">
+    <div class="toolbar-left">
+      <div class="tab-list">
+        <button class="tab-btn active" data-tab="trackerTab">Project Tracker</button>
+        <button class="tab-btn" data-tab="cutTab">Cut List Optimizer</button>
+        <button class="tab-btn" data-tab="joineryTab">Joinery Selector</button>
+        <button class="tab-btn" data-tab="randomTab">Random Project Generator</button>
       </div>
-      <div class="toolbar-right">
-        <button id="exportDataBtn">Export Data</button>
-        <label class="file-label" for="importFile">Import Data</label>
-        <input id="importFile" class="hidden-input" type="file" accept="application/json,.json,.zip,application/zip" />
-        <button id="resetAllBtn" class="danger">Reset All</button>
-      </div>
+    </div>
+    <div class="toolbar-right">
+      <button id="installBtn" style="display:none">Install App</button>
+      <button id="exportBtn">Export Data</button>
+      <label class="file-label" for="importInput">Import Data</label>
+      <input id="importInput" type="file" accept="application/json" hidden />
+    </div>
+  </section>
 
-      
-    </section>
-
-    <section id="tracker" class="tab-panel active">
-      <div class="stats" id="projectStats"></div>
-      <div class="grid grid-2">
-        <div class="panel">
-          <h2>Add or Edit Project</h2>
-          <p class="muted">Track build progress, woods, joinery, time, cost, and what you learned.</p>
-          <form id="projectForm">
-            <input type="hidden" id="projectId" />
-            <div class="form-grid">
-              <label>Project Name
-                <input id="projectName" required placeholder="Walnut side table" />
-              </label>
-              <label>Category
-                <select id="projectCategory">
-                  <option>Table</option>
-                  <option>Cabinet</option>
-                  <option>Chair</option>
-                  <option>Shelf</option>
-                  <option>Bench</option>
-                  <option>Storage</option>
-                  <option>Decor</option>
-                  <option>Other</option>
-                </select>
-              </label>
-              <label>Status
-                <select id="projectStatus">
-                  <option>Idea</option>
-                  <option>Designed</option>
-                  <option>Milling</option>
-                  <option>Joinery</option>
-                  <option>Assembly</option>
-                  <option>Finishing</option>
-                  <option>Complete</option>
-                </select>
-              </label>
-              <label>Primary Wood
-                <input id="projectWood" placeholder="Tasmanian oak, walnut, maple..." />
-              </label>
-              <label>Estimated Hours
-                <input id="projectEstimateHours" type="number" min="0" step="0.5" placeholder="12" />
-              </label>
-              <label>Actual Hours
-                <input id="projectActualHours" type="number" min="0" step="0.5" placeholder="10.5" />
-              </label>
-              <label>Material Cost
-                <input id="projectCost" type="number" min="0" step="0.01" placeholder="180" />
-              </label>
-              <label>Date Started
-                <input id="projectStartDate" type="date" />
-              </label>
-              <label>Date Completed
-                <input id="projectEndDate" type="date" />
-              </label>
-              <label>Cover Image
-                <input id="projectCoverNote" value="Managed in the media gallery below" disabled />
-              </label>
-            </div>
-            <label style="margin-top:12px;">Joinery Used
-              <div class="checkbox-group" id="projectJoineryChips"></div>
-            </label>
-            <label style="margin-top:12px;">Lessons Learned
-              <textarea id="projectLessons" placeholder="What went wrong, what to repeat, what to improve next time..."></textarea>
-            </label>
-            <label style="margin-top:12px;">Next Step or Note
-              <textarea id="projectNextStep" placeholder="Cut aprons, dry-fit base, test finish on offcut..."></textarea>
-            </label>
-            <div class="panel" style="padding:14px; box-shadow:none; margin-top:14px;">
-              <h3>Project Media</h3>
-              <p class="muted">Add planning drawings, build photos, and final shots. Images are resized before saving and stored locally in your browser database.</p>
-              <div class="media-toolbar">
-                <label>Stage
-                  <select id="mediaStage">
-                    <option value="Planning">Planning</option>
-                    <option value="Build">Build</option>
-                    <option value="Final">Final</option>
-                    <option value="Reference">Reference</option>
-                  </select>
-                </label>
-                <label>Type
-                  <select id="mediaType">
-                    <option value="Drawing">Drawing</option>
-                    <option value="In-progress photo">In-progress photo</option>
-                    <option value="Final photo">Final photo</option>
-                    <option value="Reference image">Reference image</option>
-                  </select>
-                </label>
-                <label>Caption
-                  <input id="mediaCaption" placeholder="Base dry fit, sketch v2, first finish sample..." />
-                </label>
-                <label>Files
-                  <input id="mediaFiles" type="file" accept="image/*" multiple />
-                </label>
-              </div>
-              <div class="actions">
-                <button type="button" id="saveMediaBtn" class="primary">Add Media</button>
-                <button type="button" id="refreshMediaBtn" class="secondary">Refresh Gallery</button>
-              </div>
-              <div class="hint-box small">Tip: for a brand-new project, the app creates a project ID as soon as you add media, so your drawings and photos stay attached when you save the project details.</div>
-              <div id="projectMediaGallery" class="media-gallery"></div>
-            </div>
-            <div class="actions">
-              <button type="submit" class="primary">Save Project</button>
-              <button type="button" id="clearProjectBtn" class="secondary">Clear Form</button>
-            </div>
-          </form>
+  <section id="trackerTab" class="tab-panel active">
+    <div class="grid grid-2">
+      <div class="panel">
+        <h2>Add or Update Project</h2>
+        <div class="form-grid">
+          <label>Project name <input id="projectName" placeholder="Dining table" /></label>
+          <label>Category <input id="projectCategory" placeholder="Table, cabinet, jig..." /></label>
+          <label>Status
+            <select id="projectStatus">
+              <option>Planning</option>
+              <option>In Progress</option>
+              <option>Finished</option>
+              <option>On Hold</option>
+            </select>
+          </label>
+          <label>Primary wood <input id="projectWood" placeholder="Tasmanian oak" /></label>
+          <label>Estimated hours <input id="projectEstimate" type="number" min="0" step="0.25" /></label>
+          <label>Actual hours <input id="projectActual" type="number" min="0" step="0.25" /></label>
+          <label>Cost <input id="projectCost" type="number" min="0" step="0.01" /></label>
+          <label>Start date <input id="projectStartDate" type="date" /></label>
         </div>
-
-        <div class="panel">
-          <h2>Your Projects</h2>
-          <div class="form-grid" style="margin-bottom:12px;">
-            <label>Filter Status
-              <select id="projectFilterStatus">
-                <option value="all">All</option>
-                <option>Idea</option>
-                <option>Designed</option>
-                <option>Milling</option>
-                <option>Joinery</option>
-                <option>Assembly</option>
-                <option>Finishing</option>
-                <option>Complete</option>
-              </select>
-            </label>
-            <label>Search
-              <input id="projectSearch" placeholder="Search project, wood, lessons..." />
-            </label>
-          </div>
-          <div id="projectList" class="project-list"></div>
+        <label style="margin-top:12px">Summary <textarea id="projectSummary" placeholder="What is this build?"></textarea></label>
+        <div style="margin-top:12px">
+          <div class="small muted">Joinery used</div>
+          <div id="projectJoinery" class="checkbox-group"></div>
         </div>
+        <label style="margin-top:12px">Lessons learned <textarea id="projectLessons" placeholder="What worked or failed?"></textarea></label>
+        <label>Next step <textarea id="projectNextStep" placeholder="What should happen next?"></textarea></label>
+        <div class="actions">
+          <button id="saveProjectBtn" class="primary">Save Project</button>
+          <button id="resetProjectBtn">Clear Form</button>
+        </div>
+        <div class="footer-note">Media and PDFs are managed from the detail view for each project.</div>
       </div>
 
-      <div id="projectDetailPanel" class="panel detail-panel hidden">
-        <div id="detailHeader" class="detail-header">
-          <div class="detail-header-content">
+      <div class="panel">
+        <h2>Overview</h2>
+        <div class="grid grid-3" id="projectStats"></div>
+        <div class="form-grid" style="margin-top:16px">
+          <label>Filter status
+            <select id="projectFilterStatus">
+              <option value="all">All</option>
+              <option>Planning</option>
+              <option>In Progress</option>
+              <option>Finished</option>
+              <option>On Hold</option>
+            </select>
+          </label>
+          <label>Search <input id="projectSearch" placeholder="name, wood, joinery..." /></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <h2>Your Projects</h2>
+      <div id="projectList" class="card-list"></div>
+    </div>
+
+    <div id="detailPanelWrap" style="margin-top:18px;display:none">
+      <div class="detail-shell">
+        <div class="detail-header">
+          <div class="detail-header-main">
             <div>
-              <div class="small" style="letter-spacing:0.04em; text-transform:uppercase; opacity:0.86;">Project Detail</div>
-              <h2 id="detailProjectTitle">Select a project</h2>
-              <div id="detailProjectSubtitle" class="muted">Open a project card to see its photos, plans, and build notes in one place.</div>
-              <div id="detailHeaderBadges" class="detail-badges"></div>
+              <div class="small muted">Project detail view</div>
+              <h2 id="detailProjectTitle" style="margin:4px 0 6px"></h2>
+              <div id="detailProjectSubtitle" class="pill-row"></div>
             </div>
-            <div class="actions">
-              <button type="button" onclick="editCurrentDetailProject()">Edit Project</button>
-              <button type="button" class="secondary" onclick="closeProjectDetail()">Close Detail</button>
+            <div class="inline-actions">
+              <button id="closeDetailBtn">Close</button>
             </div>
           </div>
+          <img id="detailCover" class="detail-cover" alt="Project cover" />
         </div>
 
         <div class="quick-actions">
-          <button type="button" class="primary" id="detailAddPhotoBtn">+ Photo</button>
-          <button type="button" id="detailAddPlanBtn">+ Plan PDF</button>
-          <button type="button" id="detailSaveNotesBtn">Save Notes</button>
-          <button type="button" class="secondary" id="detailJumpMediaBtn">Jump to Media</button>
-        </div>
-
-        <div class="detail-body">
-          <div class="detail-summary">
-            <div class="summary-card">
-              <h3 style="margin-top:0;">At a glance</h3>
-              <div id="detailSummaryBadges" class="summary-badges"></div>
-              <div id="detailSummaryKv" class="detail-kv"></div>
-            </div>
-            <div class="summary-card">
-              <h3 style="margin-top:0;">Current focus</h3>
-              <div id="detailCurrentFocus" class="muted">No project selected yet.</div>
-              <img id="detailCoverPreview" class="cover-preview hidden" alt="Project cover preview" />
-            </div>
-          </div>
-
-          <details id="detailMediaSection" class="detail-section" open>
-            <summary><span>Media Gallery</span><span id="detailMediaCount" class="section-count">0 items</span></summary>
-            <div class="detail-section-body">
-              <p class="muted">Planning drawings, build shots, and final photos all in one place.</p>
-              <div class="detail-toolbar">
-                <label>Filter
-                  <select id="detailMediaFilter">
-                    <option value="all">All</option>
-                    <option value="Planning">Planning</option>
-                    <option value="Build">Build</option>
-                    <option value="Final">Final</option>
-                    <option value="Reference">Reference</option>
-                  </select>
-                </label>
-              </div>
-              <div id="detailMediaGallery" class="detail-gallery-grid"></div>
-            </div>
-          </details>
-
-          <details class="detail-section">
-            <summary><span>Plans & Documents</span><span id="detailPlanCount" class="section-count">0 files</span></summary>
-            <div class="detail-section-body">
-              <p class="muted">Upload plan PDFs, cut diagrams, or revised drawings. These export with the rest of your project data.</p>
-              <div class="detail-toolbar">
-                <label>Plan label
-                  <input id="detailPlanLabel" placeholder="Dining table plan v2" />
-                </label>
-                <label>PDF file
-                  <input id="detailPlanFile" type="file" accept="application/pdf,.pdf" />
-                </label>
-                <button type="button" id="detailUploadPlanBtn" class="primary">Add Plan PDF</button>
-              </div>
-              <div id="detailPlansList" class="detail-gallery-grid"></div>
-            </div>
-          </details>
-
-          <details class="detail-section">
-            <summary><span>Notes</span><span class="section-count">Structured notes</span></summary>
-            <div class="detail-section-body">
-              <div class="note-grid">
-                <div class="note-box">
-                  <h4>Design decisions</h4>
-                  <textarea id="detailDesignNotes" placeholder="Proportion changes, wood choices, joinery decisions..."></textarea>
-                </div>
-                <div class="note-box">
-                  <h4>Build notes</h4>
-                  <textarea id="detailBuildNotes" placeholder="Setup notes, fit issues, what worked during the build..."></textarea>
-                </div>
-                <div class="note-box">
-                  <h4>Finishing notes</h4>
-                  <textarea id="detailFinishingNotes" placeholder="Surface prep, finish schedule, dry times, surprises..."></textarea>
-                </div>
-                <div class="note-box">
-                  <h4>Extra notes</h4>
-                  <textarea id="detailExtraNotes" placeholder="Hardware, client feedback, future variants, measurements to remember..."></textarea>
-                </div>
-              </div>
-              <div class="detail-note-actions">
-                <button type="button" class="primary" id="detailSaveNotesBtn2">Save Detail Notes</button>
-                <span class="muted">Your existing lessons learned and next-step note still live on the main project card/edit form.</span>
-              </div>
-            </div>
-          </details>
-        </div>
-      </div>
-    </section>
-
-    <section id="optimizer" class="tab-panel">
-      <div class="grid grid-2">
-        <div class="panel">
-          <h2>Cut List Inputs</h2>
-          <p class="muted">Add boards and parts, then generate a simple board assignment plan. This is a practical planning tool, not a full nesting engine.</p>
-
-          <div class="grid" style="margin-bottom:16px;">
-            <div class="panel" style="padding:14px; box-shadow:none;">
-              <h3>Add Stock Board</h3>
-              <div class="form-grid-3">
-                <label>Board Name
-                  <input id="boardName" placeholder="Board A" />
-                </label>
-                <label>Length
-                  <input id="boardLength" type="number" min="0" step="0.01" placeholder="1800" />
-                </label>
-                <label>Width
-                  <input id="boardWidth" type="number" min="0" step="0.01" placeholder="150" />
-                </label>
-              </div>
-              <div class="actions">
-                <button id="addBoardBtn" type="button" class="primary">Add Board</button>
-              </div>
-              <div id="boardList" class="board-list" style="margin-top:12px;"></div>
-            </div>
-
-            <div class="panel" style="padding:14px; box-shadow:none;">
-              <h3>Add Required Part</h3>
-              <div class="form-grid-3">
-                <label>Part Name
-                  <input id="partName" placeholder="Apron" />
-                </label>
-                <label>Qty
-                  <input id="partQty" type="number" min="1" step="1" value="1" />
-                </label>
-                <label>Length
-                  <input id="partLength" type="number" min="0" step="0.01" placeholder="760" />
-                </label>
-                <label>Width
-                  <input id="partWidth" type="number" min="0" step="0.01" placeholder="90" />
-                </label>
-                <label>Thickness
-                  <input id="partThickness" type="number" min="0" step="0.01" placeholder="19" />
-                </label>
-                <label>Grain Direction
-                  <select id="partGrain">
-                    <option value="length">Along length</option>
-                    <option value="either">Either</option>
-                  </select>
-                </label>
-              </div>
-              <div class="actions">
-                <button id="addPartBtn" type="button" class="primary">Add Part</button>
-              </div>
-              <div id="partList" class="part-list" style="margin-top:12px;"></div>
-            </div>
-          </div>
-
-          <div class="form-grid-3">
-            <label>Saw Kerf
-              <input id="kerf" type="number" min="0" step="0.01" value="3" />
-            </label>
-            <label>Unit Label
-              <select id="unitLabel">
-                <option value="mm">mm</option>
-                <option value="in">in</option>
-              </select>
-            </label>
-            <label>Trim Allowance per Part
-              <input id="trimAllowance" type="number" min="0" step="0.01" value="0" />
-            </label>
-          </div>
-          <div class="actions">
-            <button id="runOptimizerBtn" type="button" class="primary">Generate Plan</button>
-            <button id="clearOptimizerBtn" type="button" class="secondary">Clear Boards & Parts</button>
-          </div>
-        </div>
-
-        <div class="panel">
-          <h2>Optimization Results</h2>
-          <div id="optimizerSummary" class="empty">Add stock boards and parts, then click <strong>Generate Plan</strong>.</div>
-          <div id="optimizerResults" class="results-list" style="margin-top:12px;"></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="joinery" class="tab-panel">
-      <div class="grid grid-2">
-        <div class="panel">
-          <h2>Joinery Selector</h2>
-          <p class="muted">Set your constraints and get joinery recommendations with rationale.</p>
-          <div class="form-grid">
-            <label>Load Requirement
-              <select id="joineryLoad">
-                <option value="light">Light</option>
-                <option value="medium" selected>Medium</option>
-                <option value="heavy">Heavy</option>
-              </select>
-            </label>
-            <label>Visibility
-              <select id="joineryVisibility">
-                <option value="hidden">Prefer hidden</option>
-                <option value="either" selected>Either</option>
-                <option value="featured">Make it a feature</option>
-              </select>
-            </label>
-            <label>Skill Level
-              <select id="joinerySkill">
-                <option value="beginner">Beginner</option>
-                <option value="intermediate" selected>Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-            </label>
-            <label>Build Speed
-              <select id="joinerySpeed">
-                <option value="fast">Fast</option>
-                <option value="balanced" selected>Balanced</option>
-                <option value="slow">Can take my time</option>
-              </select>
-            </label>
-            <label>Wood Movement Concern
-              <select id="joineryMovement">
-                <option value="low">Low</option>
-                <option value="medium" selected>Medium</option>
-                <option value="high">High</option>
-              </select>
-            </label>
-            <label>Project Type
-              <select id="joineryProjectType">
-                <option value="casework">Casework / Cabinet</option>
-                <option value="table">Table / Base</option>
-                <option value="drawer">Drawer / Box</option>
-                <option value="frame">Frame / Door</option>
-                <option value="general" selected>General furniture</option>
-              </select>
-            </label>
-          </div>
-
-          <label style="margin-top:14px;">Tools You Have
-            <div class="checkbox-group" id="toolChips"></div>
+          <button id="addPhotoBtn" class="primary">+ Photo</button>
+          <button id="addPlanBtn">+ PDF Plan</button>
+          <button id="jumpNotesBtn">+ Note</button>
+          <button id="jumpMediaBtn">Media</button>
+          <label class="file-label">Stage
+            <select id="mediaStageSelect">
+              <option value="planning">Planning</option>
+              <option value="build">Build</option>
+              <option value="final">Final</option>
+            </select>
           </label>
-
-          <div class="actions">
-            <button id="runJoineryBtn" type="button" class="primary">Recommend Joinery</button>
-          </div>
+          <input id="mediaInput" type="file" accept="image/*" multiple hidden />
+          <input id="planInput" type="file" accept="application/pdf" multiple hidden />
         </div>
 
-        <div class="panel">
-          <h2>Recommendations</h2>
-          <div id="joineryResults" class="empty">Choose your constraints, then click <strong>Recommend Joinery</strong>.</div>
+        <div class="detail-grid">
+          <div class="grid">
+            <div class="section" id="mediaSection">
+              <div class="section-header" data-target="mediaBody"><h3>Media Gallery <span id="mediaCount" class="small muted"></span></h3><span>▾</span></div>
+              <div id="mediaBody" class="section-body">
+                <div class="form-grid" style="margin-bottom:12px">
+                  <label>Filter by stage
+                    <select id="mediaFilter">
+                      <option value="all">All</option>
+                      <option value="planning">Planning</option>
+                      <option value="build">Build</option>
+                      <option value="final">Final</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="mediaGallery" class="gallery-grid"></div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header" data-target="plansBody"><h3>Plans & Documents <span id="planCount" class="small muted"></span></h3><span>▸</span></div>
+              <div id="plansBody" class="section-body collapsed">
+                <div id="plansList"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="section" id="notesSection">
+              <div class="section-header" data-target="notesBody"><h3>Structured Notes</h3><span>▸</span></div>
+              <div id="notesBody" class="section-body collapsed">
+                <label>Design decisions <textarea id="detailDesignNotes"></textarea></label>
+                <label>Build notes <textarea id="detailBuildNotes"></textarea></label>
+                <label>Finishing notes <textarea id="detailFinishingNotes"></textarea></label>
+                <label>Extra notes <textarea id="detailExtraNotes"></textarea></label>
+                <div class="actions"><button id="saveNotesBtn" class="good">Save Notes</button></div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header" data-target="summaryBody"><h3>Project Summary</h3><span>▸</span></div>
+              <div id="summaryBody" class="section-body collapsed">
+                <label>Summary <textarea id="detailSummary"></textarea></label>
+                <label>Lessons learned <textarea id="detailLessons"></textarea></label>
+                <label>Next step <textarea id="detailNextStep"></textarea></label>
+                <div class="actions"><button id="saveSummaryBtn" class="good">Save Summary</button></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section id="generator" class="tab-panel">
-      <div class="grid grid-2">
-        <div class="panel">
-          <h2>Random Project Generator</h2>
-          <p class="muted">Great for short shop windows. Enter the time you have, bias toward the kind of work you want to practice, and get a few realistic project ideas.</p>
-          <div class="form-grid">
-            <label>Time Available (hours)
-              <input id="generatorHours" type="number" min="0.5" step="0.5" value="2" />
-            </label>
-            <label>Tool Style
-              <select id="generatorToolStyle">
-                <option value="any" selected>Any</option>
-                <option value="hand">Hand-tool friendly</option>
-                <option value="power">Machine / power tool friendly</option>
-                <option value="mixed">Mixed shop</option>
-              </select>
-            </label>
-            <label>Skill Focus
-              <select id="generatorSkillFocus">
-                <option value="any" selected>Any</option>
-                <option value="joinery">Joinery</option>
-                <option value="accuracy">Accuracy & setup</option>
-                <option value="finishing">Finishing</option>
-                <option value="shaping">Shaping & curves</option>
-                <option value="organization">Shop organization</option>
-                <option value="design">Design thinking</option>
-                <option value="small-furniture">Small furniture</option>
-              </select>
-            </label>
-            <label>Challenge Level
-              <select id="generatorDifficulty">
-                <option value="any" selected>Any</option>
-                <option value="easy">Easy win</option>
-                <option value="moderate">Moderate</option>
-                <option value="stretch">Stretch me a bit</option>
-              </select>
-            </label>
-            <label>Material Situation
-              <select id="generatorMaterial">
-                <option value="any" selected>Any</option>
-                <option value="scrap">Use scraps / offcuts</option>
-                <option value="hardwood">Solid wood</option>
-                <option value="sheet">Sheet goods</option>
-                <option value="hardware">Hardware-heavy project</option>
-              </select>
-            </label>
-            <label>Project Type
-              <select id="generatorType">
-                <option value="any" selected>Any</option>
-                <option value="shop">Shop aid</option>
-                <option value="home">Home accessory</option>
-                <option value="component">Furniture component / practice piece</option>
-                <option value="furniture">Small furniture</option>
-              </select>
-            </label>
-          </div>
+  <section id="cutTab" class="tab-panel">
+    <div class="grid grid-2">
+      <div class="panel">
+        <h2>Cut List Optimizer</h2>
+        <p class="muted">Enter rough boards and required parts. This first-pass optimizer groups parts onto boards by fit and reports remaining length. It is useful for thinking through stock breakdown, even though it is not a full kerf-aware nesting engine.</p>
+        <label>Boards (one per line: label,length,width,thickness)
+          <textarea id="boardsInput">Board A,2400,180,25
+Board B,1800,140,25
+Board C,1200,120,19</textarea>
+        </label>
+        <label>Parts (one per line: label,length,width,thickness,qty)
+          <textarea id="partsInput">Leg,720,60,25,4
+Apron Long,1500,90,25,2
+Apron Short,700,90,25,2
+Top Slat,900,120,19,5</textarea>
+        </label>
+        <div class="actions">
+          <button id="optimizeBtn" class="primary">Optimize</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Suggested Breakdown</h2>
+        <div id="cutSummary" class="muted">Run the optimizer to see allocations.</div>
+        <div id="cutOutput" class="grid" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </section>
 
-          <label style="margin-top:14px;">
-            <span class="checkbox-chip">
-              <input id="generatorShortOnly" type="checkbox" />
-              <span>Prioritize short-window projects (especially useful for 2 hours or less)</span>
-            </span>
+  <section id="joineryTab" class="tab-panel">
+    <div class="grid grid-2">
+      <div class="panel">
+        <h2>Joinery Selector</h2>
+        <div class="form-grid">
+          <label>Load
+            <select id="joineryLoad">
+              <option value="light">Light</option>
+              <option value="medium">Medium</option>
+              <option value="heavy">Heavy / Structural</option>
+            </select>
           </label>
-
-          <div class="actions">
-            <button id="generateProjectsBtn" type="button" class="primary">Generate 3 Ideas</button>
-            <button id="surpriseProjectBtn" type="button" class="secondary">Surprise Me</button>
-          </div>
+          <label>Visibility
+            <select id="joineryVisibility">
+              <option value="hidden">Hidden</option>
+              <option value="featured">Featured</option>
+            </select>
+          </label>
+          <label>Preferred tools
+            <select id="joineryTools">
+              <option value="hand">Mostly hand tools</option>
+              <option value="power">Mostly power tools</option>
+              <option value="mixed">Mixed shop</option>
+            </select>
+          </label>
+          <label>Project type
+            <select id="joineryProjectType">
+              <option value="casework">Casework</option>
+              <option value="table">Table / base</option>
+              <option value="drawer">Drawer / box</option>
+              <option value="frame">Frame / door</option>
+            </select>
+          </label>
         </div>
+        <div class="actions"><button id="recommendJoineryBtn" class="primary">Recommend Joinery</button></div>
+      </div>
+      <div class="panel">
+        <h2>Recommendations</h2>
+        <div id="joineryResults" class="grid"></div>
+      </div>
+    </div>
+  </section>
 
-        <div class="panel">
-          <h2>Generated Ideas</h2>
-          <div id="generatorResults" class="empty">Enter your constraints, then click <strong>Generate 3 Ideas</strong>.</div>
-
-          <h3 style="margin-top:18px;">Saved Ideas</h3>
-          <p class="muted">Keep a shortlist for the next time you suddenly have an hour or two in the shop.</p>
-          <div id="savedProjectIdeas" class="results-list"></div>
+  <section id="randomTab" class="tab-panel">
+    <div class="grid grid-2">
+      <div class="panel">
+        <h2>Random Project Generator</h2>
+        <div class="form-grid-3">
+          <label>Time available (hours) <input id="timeAvailable" type="number" min="0.25" step="0.25" value="2" /></label>
+          <label>Tool style
+            <select id="toolStyle">
+              <option value="any">Any</option>
+              <option value="hand">Hand tools</option>
+              <option value="power">Power tools</option>
+              <option value="mixed">Mixed</option>
+            </select>
+          </label>
+          <label>Difficulty
+            <select id="difficulty">
+              <option value="any">Any</option>
+              <option value="1">Easy</option>
+              <option value="2">Moderate</option>
+              <option value="3">Stretch</option>
+            </select>
+          </label>
+          <label>Project type
+            <select id="projectIdeaType">
+              <option value="any">Any</option>
+              <option value="shop">Shop utility</option>
+              <option value="component">Component / sample</option>
+              <option value="furniture">Furniture</option>
+              <option value="organization">Organization</option>
+            </select>
+          </label>
+          <label>Material
+            <select id="materialPref">
+              <option value="any">Any</option>
+              <option value="scrap">Scrap</option>
+              <option value="plywood">Plywood</option>
+              <option value="hardwood">Hardwood</option>
+            </select>
+          </label>
+          <label>Skill focus
+            <select id="skillFocus">
+              <option value="any">Any</option>
+              <option value="accuracy">Accuracy</option>
+              <option value="joinery">Joinery</option>
+              <option value="finishing">Finishing</option>
+              <option value="design">Design</option>
+              <option value="organization">Organization</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions">
+          <button id="generateIdeasBtn" class="primary">Generate 3 Ideas</button>
+          <button id="surpriseIdeaBtn">Surprise Me</button>
         </div>
       </div>
-    </section>
+      <div class="panel">
+        <h2>Ideas</h2>
+        <div id="randomIdeas"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="viewerModal" class="modal">
+  <div class="modal-card">
+    <button class="viewer-nav viewer-prev" id="viewerPrev">‹</button>
+    <button class="viewer-nav viewer-next" id="viewerNext">›</button>
+    <button class="viewer-close" id="viewerClose">Close</button>
+    <img id="viewerImage" class="viewer-image" alt="Selected media" />
+    <div class="viewer-bar">
+      <div>
+        <div id="viewerCaption" style="font-size:1.05rem;font-weight:600"></div>
+        <div id="viewerStage" class="viewer-stage"></div>
+      </div>
+      <div class="inline-actions">
+        <button id="editCaptionBtn">Edit Caption</button>
+        <button id="setCoverBtn">Set Cover</button>
+        <button id="deleteMediaBtn" class="danger">Delete</button>
+      </div>
+    </div>
   </div>
+</div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script>
-    const STORAGE_KEY = 'woodworking_workshop_companion_v1';
+<script>
+(() => {
+  const STORAGE_KEY = 'woodworking_workshop_companion_final_v1';
+  const DB_NAME = 'woodworking_workshop_companion_db';
+  const DB_VERSION = 1;
+  const joineryOptions = ['Mortise & Tenon','Loose Tenon / Domino','Dowel Joinery','Pocket Hole','Dovetail','Box Joint','Bridle Joint','Rabbet & Dado','Mitred Spline','Sliding Dovetail','Butt Joint + Screws'];
+  const randomProjectIdeas = [
+    {id:'bench-hook',name:'Bench Hook',minHours:0.5,maxHours:1.5,toolStyle:'hand',skillTags:['accuracy','organization'],type:'shop',difficulty:1,material:'scrap',shortWindow:true,materials:'Hardwood offcuts, glue',description:'Quick build that improves crosscutting safety and accuracy.',firstSteps:'Square the fences and keep the base flat.'},
+    {id:'push-sticks',name:'Custom Push Sticks',minHours:0.5,maxHours:1,toolStyle:'power',skillTags:['organization','accuracy'],type:'shop',difficulty:1,material:'scrap',shortWindow:true,materials:'Plywood scraps',description:'Fast safety upgrade you will actually use.',firstSteps:'Sketch a comfortable grip and cut two variants.'},
+    {id:'finish-board',name:'Finish Sample Board',minHours:1,maxHours:2,toolStyle:'mixed',skillTags:['finishing','design'],type:'component',difficulty:1,material:'hardwood',shortWindow:true,materials:'One board plus existing finishes',description:'Create a real-world finish reference for future furniture.',firstSteps:'Mask sections and label each schedule clearly.'},
+    {id:'sawhorses',name:'Pair of Compact Sawhorses',minHours:3,maxHours:6,toolStyle:'power',skillTags:['accuracy','joinery'],type:'shop',difficulty:2,material:'plywood',shortWindow:false,materials:'Construction timber or plywood',description:'Useful shop furniture with repeatable joinery and layout.',firstSteps:'Build one leg assembly first and copy the geometry.'},
+    {id:'stool',name:'Small Shop Stool',minHours:4,maxHours:8,toolStyle:'mixed',skillTags:['joinery','design'],type:'furniture',difficulty:2,material:'hardwood',shortWindow:false,materials:'Hardwood or quality pine',description:'A real furniture project in a manageable size.',firstSteps:'Decide whether the seat is shaped or flat before milling.'},
+    {id:'wall-rack',name:'Wall Tool Rack',minHours:1.5,maxHours:3,toolStyle:'power',skillTags:['organization','accuracy'],type:'organization',difficulty:1,material:'plywood',shortWindow:true,materials:'Plywood offcuts and screws',description:'Organize one category of tools and improve your workflow.',firstSteps:'Measure the actual tools first and leave finger clearance.'},
+    {id:'box',name:'Keepsake Box',minHours:3,maxHours:7,toolStyle:'mixed',skillTags:['joinery','finishing'],type:'furniture',difficulty:3,material:'hardwood',shortWindow:false,materials:'Milled hardwood plus hinges',description:'Small but demanding project that rewards precision.',firstSteps:'Choose joinery style first, then tune stock thickness to it.'},
+    {id:'clamping-cauls',name:'Clamping Cauls',minHours:1,maxHours:2,toolStyle:'mixed',skillTags:['accuracy'],type:'shop',difficulty:1,material:'scrap',shortWindow:true,materials:'Straight scraps and packing tape',description:'Useful support project that makes panel glue-ups easier.',firstSteps:'Ensure matching curves and label each pair.'}
+  ];
 
-    const joineryOptions = [
-      'Mortise & Tenon', 'Loose Tenon / Domino', 'Dowel Joinery', 'Pocket Hole', 'Dovetail',
-      'Box Joint', 'Bridle Joint', 'Rabbet & Dado', 'Mitred Spline', 'Sliding Dovetail', 'Butt Joint + Screws'
-    ];
+  let state = loadState();
+  let db = null;
+  let selectedProjectId = null;
+  let currentMedia = [];
+  let viewerList = [];
+  let viewerIndex = 0;
+  let deferredPrompt = null;
 
-    const toolOptions = [
-      'Table Saw', 'Track Saw', 'Router', 'Drill/Driver', 'Drill Press', 'Chisels',
-      'Hand Saw', 'Domino', 'Dowel Jig', 'Pocket Hole Jig', 'Band Saw', 'Planer/Jointer'
-    ];
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return { projects: [], savedIdeas: [], coverMap: {} };
+      const parsed = JSON.parse(raw);
+      return {
+        projects: Array.isArray(parsed.projects) ? parsed.projects : [],
+        savedIdeas: Array.isArray(parsed.savedIdeas) ? parsed.savedIdeas : [],
+        coverMap: parsed.coverMap || {}
+      };
+    } catch {
+      return { projects: [], savedIdeas: [], coverMap: {} };
+    }
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function uid(){ return Math.random().toString(36).slice(2,10); }
+  function el(id){ return document.getElementById(id); }
+  function esc(s){ return String(s ?? '').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+  function fmt(v){ return (v === '' || v === null || v === undefined || Number.isNaN(Number(v))) ? '—' : Number(v).toLocaleString(undefined, {maximumFractionDigits:2}); }
+  function statusClass(status){ return status==='Planning'?'planning':status==='In Progress'?'progress':status==='Finished'?'finished':'hold'; }
 
-    const randomProjectIdeas = [
-      {
-        id: 'bench-hook',
-        name: 'Bench Hook',
-        minHours: 0.5,
-        maxHours: 1.5,
-        toolStyle: 'hand',
-        skillTags: ['accuracy', 'organization'],
-        type: 'shop',
-        difficulty: 1,
-        material: 'scrap',
-        shortWindow: true,
-        materials: 'Hardwood offcuts, glue, optional screws',
-        description: 'A classic quick build that improves crosscutting safety and gives you a useful hand-tool appliance.',
-        firstSteps: 'Pick a flat base, square the fences, and focus on layout accuracy.'
-      },
-      {
-        id: 'push-sticks',
-        name: 'Custom Push Sticks or Push Blocks',
-        minHours: 0.5,
-        maxHours: 1,
-        toolStyle: 'power',
-        skillTags: ['organization', 'accuracy'],
-        type: 'shop',
-        difficulty: 1,
-        material: 'scrap',
-        shortWindow: true,
-        materials: 'Plywood or hardwood scraps',
-        description: 'A fast, practical project that makes every future machine session safer.',
-        firstSteps: 'Trace a comfortable handle profile and make a couple of variants for different cuts.'
-      },
-      {
-        id: 'finish-sample-board',
-        name: 'Finish Sample Board',
-        minHours: 1,
-        maxHours: 2,
-        toolStyle: 'mixed',
-        skillTags: ['finishing', 'design'],
-        type: 'component',
-        difficulty: 1,
-        material: 'hardwood',
-        shortWindow: true,
-        materials: 'One board and the finishes you already own',
-        description: 'Build a reference board with different sanding grits and finish schedules for future furniture work.',
-        firstSteps: 'Mask off sections, label everything clearly, and test the exact products you use.'
-      },
-      {
-        id: 'winding-sticks',
-        name: 'Winding Sticks',
-        minHours: 1,
-        maxHours: 2,
-        toolStyle: 'hand',
-        skillTags: ['accuracy'],
-        type: 'shop',
-        difficulty: 1,
-        material: 'hardwood',
-        shortWindow: true,
-        materials: 'Straight-grained hardwood offcuts',
-        description: 'A compact precision project that sharpens your milling eye and gives you a lasting setup aid.',
-        firstSteps: 'Mill two matching blanks and concentrate on making their top edges dead straight and parallel.'
-      },
-      {
-        id: 'chisel-rack',
-        name: 'Wall-Mounted Chisel Rack',
-        minHours: 1,
-        maxHours: 2,
-        toolStyle: 'mixed',
-        skillTags: ['organization', 'accuracy'],
-        type: 'shop',
-        difficulty: 1,
-        material: 'scrap',
-        shortWindow: true,
-        materials: 'Scrap hardwood or plywood, screws',
-        description: 'A clean little project that buys back shop time by keeping edge tools visible and protected.',
-        firstSteps: 'Measure actual chisel handles, lay out spacing, and decide whether you want slots or magnets.'
-      },
-      {
-        id: 'sanding-caddy',
-        name: 'Sandpaper / Abrasives Caddy',
-        minHours: 1,
-        maxHours: 2.5,
-        toolStyle: 'power',
-        skillTags: ['organization'],
-        type: 'shop',
-        difficulty: 1,
-        material: 'sheet',
-        shortWindow: true,
-        materials: 'Plywood offcuts, glue, brads',
-        description: 'A low-risk build that helps tame finishing chaos and makes abrasive selection faster.',
-        firstSteps: 'Choose whether you want upright dividers, drawers, or a wall rack.'
-      },
-      {
-        id: 'shop-stool',
-        name: 'Small Shop Stool',
-        minHours: 3,
-        maxHours: 5,
-        toolStyle: 'mixed',
-        skillTags: ['joinery', 'small-furniture'],
-        type: 'furniture',
-        difficulty: 2,
-        material: 'hardwood',
-        shortWindow: false,
-        materials: 'Solid wood, glue',
-        description: 'A compact furniture build that lets you practice legs, aprons, and a strong base.',
-        firstSteps: 'Pick a comfortable height and decide between simple stretchers, dowels, or mortise-and-tenon.'
-      },
-      {
-        id: 'picture-frame',
-        name: 'Picture Frame',
-        minHours: 1.5,
-        maxHours: 3,
-        toolStyle: 'mixed',
-        skillTags: ['accuracy', 'finishing'],
-        type: 'home',
-        difficulty: 1,
-        material: 'hardwood',
-        shortWindow: true,
-        materials: 'Thin stock, backing, hanging hardware',
-        description: 'Excellent for precision mitres and clean finishing with a useful end result.',
-        firstSteps: 'Start from the artwork size, then work backward to frame width, rabbet depth, and mitre setup.'
-      },
-      {
-        id: 'keyshelf',
-        name: 'Wall Key Shelf with Hooks',
-        minHours: 2,
-        maxHours: 3,
-        toolStyle: 'mixed',
-        skillTags: ['small-furniture', 'finishing'],
-        type: 'home',
-        difficulty: 1,
-        material: 'hardware',
-        shortWindow: true,
-        materials: 'Solid wood, hooks, screws',
-        description: 'A satisfying small household piece with layout, edge treatment, and finish in one session.',
-        firstSteps: 'Decide the number of hooks first, then size the shelf and add a simple profile.'
-      },
-      {
-        id: 'small-keepsake-box',
-        name: 'Small Keepsake Box',
-        minHours: 2,
-        maxHours: 4,
-        toolStyle: 'mixed',
-        skillTags: ['joinery', 'finishing'],
-        type: 'home',
-        difficulty: 2,
-        material: 'hardwood',
-        shortWindow: false,
-        materials: 'Fine hardwood, optional hinges or liner',
-        description: 'A compact but skill-rich project with joinery, lid fit, and finishing details.',
-        firstSteps: 'Choose your corner joint first: mitred spline, box joint, or tiny dovetails.'
-      },
-      {
-        id: 'drawer-organizer',
-        name: 'Drawer Organizer Trays',
-        minHours: 1,
-        maxHours: 2.5,
-        toolStyle: 'power',
-        skillTags: ['organization', 'accuracy'],
-        type: 'home',
-        difficulty: 1,
-        material: 'sheet',
-        shortWindow: true,
-        materials: 'Thin plywood or solid scraps',
-        description: 'Fast, practical, and ideal for batching several trays from offcuts.',
-        firstSteps: 'Measure the drawer interior carefully and leave a little seasonal tolerance.'
-      },
-      {
-        id: 'floating-shelf',
-        name: 'Floating Shelf',
-        minHours: 2,
-        maxHours: 4,
-        toolStyle: 'power',
-        skillTags: ['small-furniture', 'accuracy'],
-        type: 'home',
-        difficulty: 2,
-        material: 'hardware',
-        shortWindow: false,
-        materials: 'Solid wood or veneered panel, hidden brackets',
-        description: 'Good practice for straightness, wall tolerances, and clean edge treatment.',
-        firstSteps: 'Choose the bracket system first so your shelf thickness and mounting method fit it.'
-      },
-      {
-        id: 'dovetail-practice',
-        name: 'Dovetail Practice Drawer Corner',
-        minHours: 1,
-        maxHours: 2,
-        toolStyle: 'hand',
-        skillTags: ['joinery'],
-        type: 'component',
-        difficulty: 2,
-        material: 'scrap',
-        shortWindow: true,
-        materials: 'Small straight-grained offcuts',
-        description: 'A focused practice piece that improves sawing, chopping, and fit without committing to a full drawer.',
-        firstSteps: 'Cut two or three corners only, and keep notes on baseline placement and fit.'
-      },
-      {
-        id: 'mortise-tenon-practice',
-        name: 'Mortise & Tenon Practice Frame',
-        minHours: 1.5,
-        maxHours: 3,
-        toolStyle: 'mixed',
-        skillTags: ['joinery'],
-        type: 'component',
-        difficulty: 2,
-        material: 'scrap',
-        shortWindow: true,
-        materials: 'Straight stock, marking gauge, glue optional',
-        description: 'A high-value practice piece for table or chair work without building full furniture.',
-        firstSteps: 'Mill four rails/stiles and aim for repeatability rather than complexity.'
-      },
-      {
-        id: 'cabinet-door-mockup',
-        name: 'Frame-and-Panel Door Mockup',
-        minHours: 2,
-        maxHours: 4,
-        toolStyle: 'power',
-        skillTags: ['joinery', 'design'],
-        type: 'component',
-        difficulty: 2,
-        material: 'hardwood',
-        shortWindow: false,
-        materials: 'Rails, stiles, panel stock',
-        description: 'A useful furniture component build that teaches groove layout, panel sizing, and wood movement thinking.',
-        firstSteps: 'Start with a small sample door and test your groove-to-panel fit before making a full one.'
-      },
-      {
-        id: 'shooting-board',
-        name: 'Shooting Board',
-        minHours: 1,
-        maxHours: 2.5,
-        toolStyle: 'hand',
-        skillTags: ['accuracy'],
-        type: 'shop',
-        difficulty: 1,
-        material: 'sheet',
-        shortWindow: true,
-        materials: 'Stable plywood or MDF plus hardwood fence',
-        description: 'A precision aid that makes edge and end-grain tuning much easier on later furniture work.',
-        firstSteps: 'Build around your preferred plane and keep the fence dead square.'
-      },
-      {
-        id: 'coat-rack',
-        name: 'Wall Coat Rack',
-        minHours: 2,
-        maxHours: 3.5,
-        toolStyle: 'mixed',
-        skillTags: ['small-furniture', 'finishing'],
-        type: 'home',
-        difficulty: 1,
-        material: 'hardware',
-        shortWindow: true,
-        materials: 'One board, hooks or pegs, finish',
-        description: 'A practical home project with easy customization through shape, pegs, and finish choices.',
-        firstSteps: 'Choose hook spacing and mounting first, then work on the board profile.'
-      },
-      {
-        id: 'plant-stand',
-        name: 'Small Plant Stand',
-        minHours: 2.5,
-        maxHours: 4,
-        toolStyle: 'mixed',
-        skillTags: ['small-furniture', 'joinery'],
-        type: 'furniture',
-        difficulty: 2,
-        material: 'hardwood',
-        shortWindow: false,
-        materials: 'Solid wood, glue',
-        description: 'A manageable furniture-scale project that teaches stance, proportions, and base joinery.',
-        firstSteps: 'Sketch two or three proportions before cutting stock so the piece feels intentional.'
-      },
-      {
-        id: 'router-bit-cabinet',
-        name: 'Router Bit Storage Block',
-        minHours: 1,
-        maxHours: 2,
-        toolStyle: 'power',
-        skillTags: ['organization'],
-        type: 'shop',
-        difficulty: 1,
-        material: 'scrap',
-        shortWindow: true,
-        materials: 'Hardwood scrap, drill bits, labels',
-        description: 'Quick to make and immediately useful if your small tooling is getting scattered.',
-        firstSteps: 'Lay out hole sizes first and leave finger clearance around larger bits.'
-      },
-      {
-        id: 'serving-board',
-        name: 'Serving Board / Charcuterie Board',
-        minHours: 1.5,
-        maxHours: 3,
-        toolStyle: 'mixed',
-        skillTags: ['shaping', 'finishing'],
-        type: 'home',
-        difficulty: 1,
-        material: 'hardwood',
-        shortWindow: true,
-        materials: 'Attractive hardwood offcut, food-safe finish',
-        description: 'A forgiving project that lets you practice curves, edge detail, sanding, and finish quality.',
-        firstSteps: 'Choose the blank based on grain and color, then refine the silhouette.'
-      },
-      {
-        id: 'drill-bit-index',
-        name: 'Drill Bit Index Rack',
-        minHours: 0.75,
-        maxHours: 1.5,
-        toolStyle: 'power',
-        skillTags: ['organization', 'accuracy'],
-        type: 'shop',
-        difficulty: 1,
-        material: 'scrap',
-        shortWindow: true,
-        materials: 'Scrap hardwood or plywood',
-        description: 'A micro-project that is perfect for very short windows and sharpens layout discipline.',
-        firstSteps: 'Group sizes logically and label before final drilling to avoid mixups.'
-      },
-      {
-        id: 'edge-profile-sample',
-        name: 'Edge Profile & Chamfer Sample Stick',
-        minHours: 0.5,
-        maxHours: 1.5,
-        toolStyle: 'mixed',
-        skillTags: ['design', 'shaping'],
-        type: 'component',
-        difficulty: 1,
-        material: 'scrap',
-        shortWindow: true,
-        materials: 'One straight offcut',
-        description: 'Create a tactile reference stick with different edge treatments for future furniture decisions.',
-        firstSteps: 'Put one profile per section and label the tools or router bits used.'
-      },
-      {
-        id: 'nightstand-mockup',
-        name: 'Nightstand Design Mockup',
-        minHours: 2,
-        maxHours: 4,
-        toolStyle: 'mixed',
-        skillTags: ['design', 'small-furniture'],
-        type: 'component',
-        difficulty: 2,
-        material: 'sheet',
-        shortWindow: false,
-        materials: 'Cheap sheet goods or construction lumber',
-        description: 'A prototype-driven session that helps you test proportions and construction before committing to nice timber.',
-        firstSteps: 'Mock up full dimensions quickly and evaluate shelf height, drawer proportion, and stance.'
-      },
-      {
-        id: 'frame-bridle-practice',
-        name: 'Bridle Joint Frame',
-        minHours: 1.5,
-        maxHours: 3,
-        toolStyle: 'mixed',
-        skillTags: ['joinery'],
-        type: 'component',
-        difficulty: 2,
-        material: 'scrap',
-        shortWindow: true,
-        materials: 'Straight-grained offcuts',
-        description: 'A useful visible-joinery exercise for frames, stools, and table bases.',
-        firstSteps: 'Aim for crisp shoulders and an even reveal rather than a complicated frame shape.'
-      },
-      {
-        id: 'small-wall-shelf',
-        name: 'Small Wall Shelf',
-        minHours: 1.5,
-        maxHours: 3,
-        toolStyle: 'mixed',
-        skillTags: ['small-furniture', 'accuracy'],
-        type: 'home',
-        difficulty: 1,
-        material: 'hardwood',
-        shortWindow: true,
-        materials: 'One board, brackets or simple joinery',
-        description: 'Simple enough for a short session but still teaches layout, square cuts, and finish choices.',
-        firstSteps: 'Pick location first so depth and mounting method suit the actual use.'
-      },
-      {
-        id: 'jewelry-tray',
-        name: 'Jewelry / Catch-All Tray',
-        minHours: 1.5,
-        maxHours: 3,
-        toolStyle: 'hand',
-        skillTags: ['shaping', 'finishing'],
-        type: 'home',
-        difficulty: 1,
-        material: 'hardwood',
-        shortWindow: true,
-        materials: 'A nice offcut and finish',
-        description: 'A compact project with plenty of room to explore subtle shaping and surface quality.',
-        firstSteps: 'Decide whether you want faceted sides, carved recesses, or a simple chamfered profile.'
-      }
-    ];
+  function setUpTabs(){
+    document.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+        btn.classList.add('active');
+        el(btn.dataset.tab).classList.add('active');
+      });
+    });
+  }
 
-    const defaultState = {
-      projects: [],
-      optimizer: {
-        boards: [],
-        parts: []
-      },
-      generator: {
-        savedIdeas: []
+  function renderJoineryChecks(){
+    const wrap = el('projectJoinery');
+    wrap.innerHTML = joineryOptions.map(j => `<label class="checkbox-chip"><input type="checkbox" value="${esc(j)}"> <span>${esc(j)}</span></label>`).join('');
+  }
+  function getCheckedValues(containerId){ return [...el(containerId).querySelectorAll('input:checked')].map(i=>i.value); }
+  function setCheckedValues(containerId, values){
+    [...el(containerId).querySelectorAll('input')].forEach(i => i.checked = values.includes(i.value));
+  }
+
+  function resetProjectForm(){
+    ['projectName','projectCategory','projectWood','projectEstimate','projectActual','projectCost','projectStartDate','projectSummary','projectLessons','projectNextStep'].forEach(id => el(id).value = '');
+    el('projectStatus').value = 'Planning';
+    setCheckedValues('projectJoinery', []);
+    delete el('saveProjectBtn').dataset.editId;
+    el('saveProjectBtn').textContent = 'Save Project';
+  }
+
+  function saveProject(){
+    const payload = {
+      id: el('saveProjectBtn').dataset.editId || uid(),
+      name: el('projectName').value.trim(),
+      category: el('projectCategory').value.trim(),
+      status: el('projectStatus').value,
+      wood: el('projectWood').value.trim(),
+      estimateHours: el('projectEstimate').value,
+      actualHours: el('projectActual').value,
+      cost: el('projectCost').value,
+      startDate: el('projectStartDate').value,
+      summary: el('projectSummary').value.trim(),
+      lessons: el('projectLessons').value.trim(),
+      nextStep: el('projectNextStep').value.trim(),
+      joinery: getCheckedValues('projectJoinery'),
+      designNotes: '',
+      buildNotes: '',
+      finishingNotes: '',
+      extraNotes: ''
+    };
+    if (!payload.name) { alert('Please add a project name.'); return; }
+    const existing = state.projects.findIndex(p => p.id === payload.id);
+    if (existing >= 0) {
+      const prev = state.projects[existing];
+      state.projects[existing] = { ...prev, ...payload };
+    } else {
+      state.projects.push(payload);
+    }
+    saveState();
+    renderProjects();
+    resetProjectForm();
+  }
+
+  function editProject(id){
+    const p = state.projects.find(x => x.id === id);
+    if (!p) return;
+    el('projectName').value = p.name || '';
+    el('projectCategory').value = p.category || '';
+    el('projectStatus').value = p.status || 'Planning';
+    el('projectWood').value = p.wood || '';
+    el('projectEstimate').value = p.estimateHours || '';
+    el('projectActual').value = p.actualHours || '';
+    el('projectCost').value = p.cost || '';
+    el('projectStartDate').value = p.startDate || '';
+    el('projectSummary').value = p.summary || '';
+    el('projectLessons').value = p.lessons || '';
+    el('projectNextStep').value = p.nextStep || '';
+    setCheckedValues('projectJoinery', p.joinery || []);
+    el('saveProjectBtn').dataset.editId = p.id;
+    el('saveProjectBtn').textContent = 'Update Project';
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  async function confirmDeleteProject(id){
+    const project = state.projects.find(p => p.id === id);
+    const name = project?.name ? `\"${project.name}\"` : 'this project';
+    if (!confirm(`Delete ${name}? This will also remove its linked media and PDF plans.`)) return;
+    await deleteProject(id, true);
+  }
+
+  async function deleteProject(id, skipConfirm = false){
+    if (!skipConfirm && !confirm('Delete this project and its linked media and PDF plans?')) return;
+    state.projects = state.projects.filter(p => p.id !== id);
+    delete state.coverMap[id];
+    saveState();
+    await deleteProjectAssets(id);
+    if (selectedProjectId === id) closeDetail();
+    renderProjects();
+  }
+
+  function renderProjectStats(){
+    const projects = state.projects;
+    const total = projects.length;
+    const inProgress = projects.filter(p => p.status === 'In Progress').length;
+    const finished = projects.filter(p => p.status === 'Finished').length;
+    const hours = projects.reduce((sum,p)=> sum + (Number(p.actualHours)||0), 0);
+    el('projectStats').innerHTML = [
+      ['Projects', total],
+      ['In Progress', inProgress],
+      ['Finished', finished],
+      ['Hours Logged', fmt(hours)]
+    ].map(([label,val]) => `<div class="card"><div class="small muted">${label}</div><div style="font-size:1.5rem;font-weight:700;margin-top:6px">${val}</div></div>`).join('');
+  }
+
+  async function renderProjects(){
+    renderProjectStats();
+    const list = el('projectList');
+    const filterStatus = el('projectFilterStatus').value;
+    const query = el('projectSearch').value.trim().toLowerCase();
+    let projects = [...state.projects].sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
+    if (filterStatus !== 'all') projects = projects.filter(p => p.status === filterStatus);
+    if (query) projects = projects.filter(p => [p.name,p.category,p.wood,p.summary,p.lessons,p.nextStep,(p.joinery||[]).join(' ')].join(' ').toLowerCase().includes(query));
+    if (!projects.length) { list.innerHTML = '<div class="empty">No matching projects yet.</div>'; return; }
+
+    const coverIds = new Set(projects.map(p => state.coverMap[p.id]).filter(Boolean));
+    const coverLookup = await getMediaRecordsByIds([...coverIds]);
+    list.innerHTML = projects.map(project => {
+      const cover = coverLookup[state.coverMap[project.id]];
+      const img = cover ? `<img class="card-cover" src="${cover.dataUrl}" alt="${esc(project.name)} cover" />` : `<div class="card-cover" style="display:grid;place-items:center;color:var(--muted)">No cover image yet</div>`;
+      return `<article class="card">
+        ${img}
+        <div class="card-header">
+          <div>
+            <h4>${esc(project.name)}</h4>
+            <div class="small muted">${esc(project.category || 'Project')} • ${esc(project.wood || 'Wood not listed')}</div>
+          </div>
+          <span class="badge ${statusClass(project.status)}">${esc(project.status)}</span>
+        </div>
+        <div class="meta" style="margin-top:10px">
+          <div class="pill"><strong>Estimate:</strong> ${fmt(project.estimateHours)} h</div>
+          <div class="pill"><strong>Actual:</strong> ${fmt(project.actualHours)} h</div>
+          <div class="pill"><strong>Cost:</strong> $${fmt(project.cost)}</div>
+        </div>
+        <p class="small muted" style="margin:12px 0 0">${esc(project.summary || project.nextStep || 'No summary yet.')}</p>
+        <div class="actions">
+          <button onclick="appOpenDetail('${project.id}')" class="primary">Details</button>
+          <button onclick="appEditProject('${project.id}')">Edit</button>
+          <button onclick="appConfirmDeleteProject('${project.id}')" class="danger">Delete</button>
+        </div>
+      </article>`;
+    }).join('');
+  }
+
+  function openDb(){
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains('media')) {
+          const store = db.createObjectStore('media', {keyPath:'id'});
+          store.createIndex('projectId','projectId',{unique:false});
+        }
+        if (!db.objectStoreNames.contains('plans')) {
+          const store = db.createObjectStore('plans', {keyPath:'id'});
+          store.createIndex('projectId','projectId',{unique:false});
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function withStore(name, mode, fn){
+    if (!db) db = await openDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(name, mode);
+      const store = tx.objectStore(name);
+      let req = fn(store);
+      tx.oncomplete = () => resolve(req?.result);
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+  function requestPromise(req){
+    return new Promise((resolve,reject)=>{ req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error); });
+  }
+  async function saveMediaRecord(rec){ return withStore('media','readwrite', store => store.put(rec)); }
+  async function savePlanRecord(rec){ return withStore('plans','readwrite', store => store.put(rec)); }
+  async function getMediaByProject(projectId){
+    if (!db) db = await openDb();
+    const tx = db.transaction('media','readonly');
+    const idx = tx.objectStore('media').index('projectId');
+    return requestPromise(idx.getAll(projectId));
+  }
+  async function getPlansByProject(projectId){
+    if (!db) db = await openDb();
+    const tx = db.transaction('plans','readonly');
+    const idx = tx.objectStore('plans').index('projectId');
+    return requestPromise(idx.getAll(projectId));
+  }
+  async function getMediaById(id){ return withStore('media','readonly', store => store.get(id)); }
+  async function getMediaRecordsByIds(ids){
+    const out = {};
+    for (const id of ids) {
+      if (!id) continue;
+      const item = await getMediaById(id);
+      if (item) out[id] = item;
+    }
+    return out;
+  }
+  async function deleteMediaRecord(id){ return withStore('media','readwrite', store => store.delete(id)); }
+  async function deletePlanRecord(id){ return withStore('plans','readwrite', store => store.delete(id)); }
+  async function deleteProjectAssets(projectId){
+    const media = await getMediaByProject(projectId);
+    const plans = await getPlansByProject(projectId);
+    for (const item of media) await deleteMediaRecord(item.id);
+    for (const item of plans) await deletePlanRecord(item.id);
+  }
+
+  async function openDetail(projectId){
+    selectedProjectId = projectId;
+    const project = state.projects.find(p => p.id === projectId);
+    if (!project) return;
+    el('detailPanelWrap').style.display = 'block';
+    el('detailProjectTitle').textContent = project.name;
+    el('detailProjectSubtitle').innerHTML = `
+      <span class="badge ${statusClass(project.status)}">${esc(project.status)}</span>
+      <span class="pill">${esc(project.category || 'Project')}</span>
+      <span class="pill">${esc(project.wood || 'Wood not listed')}</span>
+      <span class="pill">Estimate ${fmt(project.estimateHours)} h</span>
+      <span class="pill">Actual ${fmt(project.actualHours)} h</span>
+    `;
+    el('detailSummary').value = project.summary || '';
+    el('detailLessons').value = project.lessons || '';
+    el('detailNextStep').value = project.nextStep || '';
+    el('detailDesignNotes').value = project.designNotes || '';
+    el('detailBuildNotes').value = project.buildNotes || '';
+    el('detailFinishingNotes').value = project.finishingNotes || '';
+    el('detailExtraNotes').value = project.extraNotes || '';
+
+    currentMedia = await getMediaByProject(projectId);
+    renderMedia();
+    renderCover();
+    await renderPlans();
+    el('detailPanelWrap').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function closeDetail(){
+    selectedProjectId = null;
+    currentMedia = [];
+    el('detailPanelWrap').style.display = 'none';
+  }
+
+  function getSelectedProject(){
+    return state.projects.find(p => p.id === selectedProjectId);
+  }
+
+  function renderCover(){
+    const coverId = state.coverMap[selectedProjectId];
+    const cover = currentMedia.find(m => m.id === coverId) || currentMedia.find(m => m.stage === 'final') || currentMedia[0];
+    el('detailCover').src = cover ? cover.dataUrl : '';
+    el('detailCover').style.display = cover ? 'block' : 'none';
+  }
+
+  function renderMedia(){
+    const filter = el('mediaFilter').value;
+    const gallery = el('mediaGallery');
+    const filtered = currentMedia.filter(m => filter === 'all' || m.stage === filter).sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||''));
+    viewerList = filtered;
+    el('mediaCount').textContent = `(${filtered.length})`;
+    if (!filtered.length) {
+      gallery.innerHTML = '<div class="empty">No media yet. Add planning drawings, build photos, or final shots.</div>';
+      return;
+    }
+    gallery.innerHTML = filtered.map((item, index) => `
+      <div class="thumb-card">
+        <img src="${item.dataUrl}" alt="${esc(item.caption || item.name || 'Project image')}" onclick="appOpenViewer(${index})" />
+        <div class="thumb-meta">
+          <div style="font-weight:600">${esc(item.caption || item.name || 'Untitled')}</div>
+          <div class="small muted">${esc(item.stage)} • ${new Date(item.createdAt).toLocaleDateString()}</div>
+          <div class="actions">
+            <button onclick="appOpenViewer(${index})">View</button>
+            <button onclick="appSetCover('${item.id}')">Set Cover</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function renderPlans(){
+    const plans = (await getPlansByProject(selectedProjectId)).sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||''));
+    el('planCount').textContent = `(${plans.length})`;
+    const list = el('plansList');
+    if (!plans.length) {
+      list.innerHTML = '<div class="empty">No PDF plans yet.</div>';
+      return;
+    }
+    list.innerHTML = plans.map(item => `
+      <div class="plan-row">
+        <div>
+          <div style="font-weight:600">${esc(item.name)}</div>
+          <div class="small muted">${new Date(item.createdAt).toLocaleDateString()}</div>
+        </div>
+        <div class="inline-actions">
+          <button onclick="appOpenPlan('${item.id}')">Open</button>
+          <button class="danger" onclick="appDeletePlan('${item.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function uploadMedia(files){
+    if (!selectedProjectId || !files.length) return;
+    const stage = el('mediaStageSelect').value;
+    for (const file of files) {
+      const dataUrl = await readFileAsDataURL(file);
+      const caption = prompt('Caption for this image:', file.name.replace(/\.[^.]+$/, '')) ?? file.name;
+      await saveMediaRecord({ id: uid(), projectId: selectedProjectId, name: file.name, caption, stage, dataUrl, createdAt: new Date().toISOString() });
+    }
+    currentMedia = await getMediaByProject(selectedProjectId);
+    renderMedia();
+    renderCover();
+    renderProjects();
+  }
+
+  async function uploadPlans(files){
+    if (!selectedProjectId || !files.length) return;
+    for (const file of files) {
+      const dataUrl = await readFileAsDataURL(file);
+      await savePlanRecord({ id: uid(), projectId: selectedProjectId, name: file.name, dataUrl, mime: file.type || 'application/pdf', createdAt: new Date().toISOString() });
+    }
+    renderPlans();
+  }
+
+  function readFileAsDataURL(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function toggleSection(targetId){
+    const body = el(targetId);
+    body.classList.toggle('collapsed');
+    const icon = body.previousElementSibling?.querySelector('span:last-child');
+    if (icon) icon.textContent = body.classList.contains('collapsed') ? '▸' : '▾';
+  }
+
+  function saveDetailNotes(){
+    const project = getSelectedProject();
+    if (!project) return;
+    project.designNotes = el('detailDesignNotes').value.trim();
+    project.buildNotes = el('detailBuildNotes').value.trim();
+    project.finishingNotes = el('detailFinishingNotes').value.trim();
+    project.extraNotes = el('detailExtraNotes').value.trim();
+    saveState();
+    alert('Notes saved.');
+  }
+  function saveDetailSummary(){
+    const project = getSelectedProject();
+    if (!project) return;
+    project.summary = el('detailSummary').value.trim();
+    project.lessons = el('detailLessons').value.trim();
+    project.nextStep = el('detailNextStep').value.trim();
+    saveState();
+    renderProjects();
+    alert('Summary updated.');
+  }
+
+  function openViewer(index){
+    viewerIndex = index;
+    updateViewer();
+    el('viewerModal').classList.add('open');
+  }
+  function closeViewer(){ el('viewerModal').classList.remove('open'); }
+  function updateViewer(){
+    const item = viewerList[viewerIndex];
+    if (!item) return;
+    el('viewerImage').src = item.dataUrl;
+    el('viewerCaption').textContent = item.caption || item.name || '';
+    el('viewerStage').textContent = `${item.stage} • ${new Date(item.createdAt).toLocaleString()}`;
+  }
+  function nextViewer(){ if (!viewerList.length) return; viewerIndex = (viewerIndex + 1) % viewerList.length; updateViewer(); }
+  function prevViewer(){ if (!viewerList.length) return; viewerIndex = (viewerIndex - 1 + viewerList.length) % viewerList.length; updateViewer(); }
+
+  async function editViewerCaption(){
+    const item = viewerList[viewerIndex];
+    if (!item) return;
+    const caption = prompt('Edit caption:', item.caption || item.name || '');
+    if (caption === null) return;
+    item.caption = caption.trim();
+    await saveMediaRecord(item);
+    currentMedia = await getMediaByProject(selectedProjectId);
+    renderMedia();
+    updateViewer();
+  }
+  async function setCover(mediaId){
+    if (!selectedProjectId) return;
+    state.coverMap[selectedProjectId] = mediaId;
+    saveState();
+    renderCover();
+    renderProjects();
+  }
+  async function deleteCurrentMedia(){
+    const item = viewerList[viewerIndex];
+    if (!item || !confirm(`Delete this image${item.caption ? `: ${item.caption}` : ''}?`)) return;
+    if (state.coverMap[selectedProjectId] === item.id) delete state.coverMap[selectedProjectId];
+    await deleteMediaRecord(item.id);
+    saveState();
+    currentMedia = await getMediaByProject(selectedProjectId);
+    renderMedia();
+    renderCover();
+    renderProjects();
+    if (!viewerList.length || !currentMedia.length) closeViewer();
+    else {
+      viewerList = currentMedia.filter(m => el('mediaFilter').value === 'all' || m.stage === el('mediaFilter').value).sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||''));
+      viewerIndex = Math.max(0, Math.min(viewerIndex, viewerList.length - 1));
+      if (viewerList.length) updateViewer(); else closeViewer();
+    }
+  }
+
+  async function openPlan(id){
+    if (!db) db = await openDb();
+    const tx = db.transaction('plans','readonly');
+    const item = await requestPromise(tx.objectStore('plans').get(id));
+    if (!item) return;
+    const win = window.open();
+    if (win) win.document.write(`<iframe src="${item.dataUrl}" style="border:none;width:100%;height:100vh"></iframe>`);
+  }
+  async function deletePlan(id){
+    if (!confirm('Delete this PDF plan from the project?')) return;
+    await deletePlanRecord(id);
+    renderPlans();
+  }
+
+  function exportData(){
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      app: 'Woodworking Workshop Companion',
+      state
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'woodworking-workshop-companion-data.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  function importData(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        if (!parsed.state || !Array.isArray(parsed.state.projects)) throw new Error('bad');
+        state = {
+          projects: parsed.state.projects,
+          savedIdeas: parsed.state.savedIdeas || [],
+          coverMap: parsed.state.coverMap || {}
+        };
+        saveState();
+        renderProjects();
+        alert('Text data imported. Media and PDFs remain on the current browser/device because they are stored in IndexedDB.');
+      } catch {
+        alert('That file could not be imported.');
       }
     };
+    reader.readAsText(file);
+  }
 
-    let state = loadState();
-
-    function loadState() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return structuredClone(defaultState);
-        const parsed = JSON.parse(raw);
-        return {
-          projects: parsed.projects || [],
-          optimizer: {
-            boards: parsed.optimizer?.boards || [],
-            parts: parsed.optimizer?.parts || []
-          },
-          generator: {
-            savedIdeas: parsed.generator?.savedIdeas || []
-          }
-        };
-      } catch (err) {
-        console.error(err);
-        return structuredClone(defaultState);
-      }
+  function parseCsvLines(text, expectedMin){
+    return text.split(/\n+/).map(line => line.trim()).filter(Boolean).map(line => line.split(',').map(x => x.trim())).filter(parts => parts.length >= expectedMin);
+  }
+  function optimizeCuts(){
+    const boards = parseCsvLines(el('boardsInput').value, 4).map(parts => ({label:parts[0], length:Number(parts[1]), width:Number(parts[2]), thickness:Number(parts[3]), remaining:Number(parts[1]), cuts:[]}));
+    const parts = parseCsvLines(el('partsInput').value, 5).flatMap(parts => {
+      const qty = Number(parts[4]) || 1;
+      return Array.from({length:qty}, (_,i)=>({label: qty>1 ? `${parts[0]} ${i+1}` : parts[0], length:Number(parts[1]), width:Number(parts[2]), thickness:Number(parts[3])}));
+    }).sort((a,b)=> b.length - a.length);
+    const unplaced = [];
+    for (const part of parts) {
+      const candidate = boards.filter(b => b.width >= part.width && b.thickness >= part.thickness && b.remaining >= part.length).sort((a,b)=> a.remaining - b.remaining)[0];
+      if (candidate) {
+        candidate.cuts.push(part);
+        candidate.remaining -= part.length;
+      } else unplaced.push(part);
     }
-
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-
-    function uid() {
-      return Math.random().toString(36).slice(2, 10);
-    }
-
-    function el(id) { return document.getElementById(id); }
-
-    function formatNumber(value) {
-      if (value === '' || value === null || value === undefined || Number.isNaN(Number(value))) return '—';
-      return Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 });
-    }
-
-    function setUpTabs() {
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-          document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
-          btn.classList.add('active');
-          el(btn.dataset.tab).classList.add('active');
-        });
-      });
-    }
-
-    function renderJoineryChips(containerId, options) {
-      const container = el(containerId);
-      container.innerHTML = '';
-      options.forEach(name => {
-        const label = document.createElement('label');
-        label.className = 'checkbox-chip';
-        label.innerHTML = `<input type="checkbox" value="${name}"> <span>${name}</span>`;
-        container.appendChild(label);
-      });
-    }
-
-    function getCheckedValues(containerId) {
-      return [...el(containerId).querySelectorAll('input:checked')].map(i => i.value);
-    }
-
-    function setCheckedValues(containerId, values) {
-      [...el(containerId).querySelectorAll('input')].forEach(input => {
-        input.checked = values.includes(input.value);
-      });
-    }
-
-    function clearProjectForm() {
-      el('projectForm').reset();
-      el('projectId').value = '';
-      setCheckedValues('projectJoineryChips', []);
-      el('mediaCaption').value = '';
-      el('mediaFiles').value = '';
-      renderProjectMediaGallery();
-    }
-
-
-    const MEDIA_DB_NAME = 'woodworking-workshop-media';
-    const MEDIA_STORE = 'media';
-    let mediaDbPromise;
-
-    function openMediaDb() {
-      if (mediaDbPromise) return mediaDbPromise;
-      mediaDbPromise = new Promise((resolve, reject) => {
-        const request = indexedDB.open(MEDIA_DB_NAME, 1);
-        request.onupgradeneeded = () => {
-          const db = request.result;
-          if (!db.objectStoreNames.contains(MEDIA_STORE)) {
-            const store = db.createObjectStore(MEDIA_STORE, { keyPath: 'id' });
-            store.createIndex('projectId', 'projectId', { unique: false });
-          }
-        };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-      return mediaDbPromise;
-    }
-
-    async function mediaTx(mode, work) {
-      const db = await openMediaDb();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(MEDIA_STORE, mode);
-        const store = tx.objectStore(MEDIA_STORE);
-        const result = work(store, tx);
-        tx.oncomplete = () => resolve(result);
-        tx.onerror = () => reject(tx.error);
-        tx.onabort = () => reject(tx.error);
-      });
-    }
-
-    async function putMediaRecord(record) {
-      const db = await openMediaDb();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(MEDIA_STORE, 'readwrite');
-        const store = tx.objectStore(MEDIA_STORE);
-        const req = store.put(record);
-        req.onsuccess = () => resolve(record);
-        req.onerror = () => reject(req.error);
-      });
-    }
-
-    async function getProjectMedia(projectId) {
-      if (!projectId) return [];
-      const db = await openMediaDb();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(MEDIA_STORE, 'readonly');
-        const store = tx.objectStore(MEDIA_STORE);
-        const index = store.index('projectId');
-        const req = index.getAll(projectId);
-        req.onsuccess = () => resolve((req.result || []).sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || (a.createdAt || '').localeCompare(b.createdAt || '')));
-        req.onerror = () => reject(req.error);
-      });
-    }
-
-    async function getAllMedia() {
-      const db = await openMediaDb();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(MEDIA_STORE, 'readonly');
-        const store = tx.objectStore(MEDIA_STORE);
-        const req = store.getAll();
-        req.onsuccess = () => resolve(req.result || []);
-        req.onerror = () => reject(req.error);
-      });
-    }
-
-    async function getMediaById(id) {
-      const db = await openMediaDb();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(MEDIA_STORE, 'readonly');
-        const store = tx.objectStore(MEDIA_STORE);
-        const req = store.get(id);
-        req.onsuccess = () => resolve(req.result || null);
-        req.onerror = () => reject(req.error);
-      });
-    }
-
-    async function deleteMediaRecord(id) {
-      const db = await openMediaDb();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(MEDIA_STORE, 'readwrite');
-        const store = tx.objectStore(MEDIA_STORE);
-        const req = store.delete(id);
-        req.onsuccess = () => resolve(true);
-        req.onerror = () => reject(req.error);
-      });
-    }
-
-    async function clearAllMedia() {
-      const db = await openMediaDb();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(MEDIA_STORE, 'readwrite');
-        const store = tx.objectStore(MEDIA_STORE);
-        const req = store.clear();
-        req.onsuccess = () => resolve(true);
-        req.onerror = () => reject(req.error);
-      });
-    }
-
-    function ensureCurrentProjectId() {
-      let id = el('projectId').value;
-      if (!id) {
-        id = uid();
-        el('projectId').value = id;
-      }
-      return id;
-    }
-
-    function fileToDataUrl(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function dataUrlToBlob(dataUrl) {
-      const parts = dataUrl.split(',');
-      const mime = parts[0].match(/:(.*?);/)[1];
-      const binary = atob(parts[1]);
-      let n = binary.length;
-      const u8 = new Uint8Array(n);
-      while (n--) u8[n] = binary.charCodeAt(n);
-      return new Blob([u8], { type: mime });
-    }
-
-    async function resizeImageFile(file, maxDimension = 1800, quality = 0.82, thumbDimension = 480) {
-      const dataUrl = await fileToDataUrl(file);
-      const img = await new Promise((resolve, reject) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = reject;
-        image.src = dataUrl;
-      });
-
-      function drawSized(limit, outType, outQuality) {
-        const scale = Math.min(1, limit / Math.max(img.width, img.height));
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.max(1, Math.round(img.width * scale));
-        canvas.height = Math.max(1, Math.round(img.height * scale));
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        return canvas.toDataURL(outType, outQuality);
-      }
-
-      const fullType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-      const fullDataUrl = drawSized(maxDimension, fullType, quality);
-      const thumbDataUrl = drawSized(thumbDimension, 'image/jpeg', 0.72);
-      return {
-        fullBlob: dataUrlToBlob(fullDataUrl),
-        thumbDataUrl,
-        width: img.width,
-        height: img.height
-      };
-    }
-
-    function getProjectById(id) {
-      return state.projects.find(p => p.id === id);
-    }
-
-    function updateProjectMediaSummary(projectId, mediaItems) {
-      const project = getProjectById(projectId);
-      if (!project) return;
-      project.mediaCount = mediaItems.length;
-      const coverCandidates = mediaItems.filter(item => item.kind !== 'plan');
-      if (!project.coverMediaId || !coverCandidates.some(item => item.id === project.coverMediaId)) {
-        project.coverMediaId = coverCandidates[0]?.id || '';
-      }
-      const cover = coverCandidates.find(item => item.id === project.coverMediaId) || coverCandidates[0];
-      project.coverThumb = cover?.thumbDataUrl || '';
-    }
-
-    async function syncProjectMediaSummary(projectId) {
-      const mediaItems = await getProjectMedia(projectId);
-      const project = getProjectById(projectId);
-      if (project) {
-        updateProjectMediaSummary(projectId, mediaItems);
-        saveState();
-      }
-      return mediaItems;
-    }
-
-    async function renderProjectMediaGallery() {
-      const projectId = el('projectId').value;
-      const gallery = el('projectMediaGallery');
-      if (!projectId) {
-        gallery.innerHTML = '<div class="gallery-empty">No media yet. Add files above and the app will attach them to this project.</div>';
-        return;
-      }
-      const items = await getProjectMedia(projectId);
-      const project = getProjectById(projectId);
-      if (project) updateProjectMediaSummary(projectId, items);
-      const images = items.filter(item => item.kind !== 'plan');
-      const planCount = items.filter(item => item.kind === 'plan').length;
-      if (!images.length) {
-        gallery.innerHTML = `<div class="gallery-empty">No drawings or photos saved for this project yet.${planCount ? ` ${planCount} PDF plan${planCount === 1 ? '' : 's'} live in the detail view.` : ''}</div>`;
-        return;
-      }
-      gallery.innerHTML = (planCount ? `<div class="hint-box small" style="margin-bottom:12px;">${planCount} PDF plan${planCount === 1 ? '' : 's'} attached. Open the project detail view to manage plan files.</div>` : '') + images.map(item => `
-        <article class="media-card">
-          <div class="media-thumb"><img src="${item.thumbDataUrl}" alt="${escapeAttribute(item.caption || item.filename || 'Project media')}"></div>
-          <div class="media-body">
-            <div>
-              <strong>${escapeHtml(item.caption || item.filename || item.type)}</strong>
-              <div class="small muted">${escapeHtml(item.filename || '')}</div>
-            </div>
-            <div class="media-meta">
-              <span class="tag">${escapeHtml(item.stage || 'Stage')}</span>
-              <span class="tag">${escapeHtml(item.type || 'Media')}</span>
-              ${project?.coverMediaId === item.id ? '<span class="tag cover-badge">Cover</span>' : ''}
-            </div>
-            <div class="media-actions">
-              <button type="button" onclick="viewMedia('${item.id}')">View</button>
-              <button type="button" onclick="setProjectCover('${item.id}')">Set Cover</button>
-              <button type="button" class="danger" onclick="deleteMedia('${item.id}')">Delete</button>
-            </div>
-          </div>
-        </article>
-      `).join('');
-    }
-
-    async function handleMediaUpload() {
-      const files = [...el('mediaFiles').files || []];
-      if (!files.length) {
-        alert('Choose at least one image file first.');
-        return;
-      }
-      const projectId = ensureCurrentProjectId();
-      const stage = el('mediaStage').value;
-      const type = el('mediaType').value;
-      const captionBase = el('mediaCaption').value.trim();
-      const existing = await getProjectMedia(projectId);
-      let order = existing.length;
-      for (const file of files) {
-        const processed = await resizeImageFile(file);
-        const record = {
-          id: uid(),
-          projectId,
-          kind: 'image',
-          filename: file.name,
-          caption: captionBase || file.name.replace(/\.[^.]+$/, ''),
-          stage,
-          type,
-          width: processed.width,
-          height: processed.height,
-          thumbDataUrl: processed.thumbDataUrl,
-          fullBlob: processed.fullBlob,
-          sortOrder: order++,
-          createdAt: new Date().toISOString()
-        };
-        await putMediaRecord(record);
-      }
-      await syncProjectMediaSummary(projectId);
-      el('mediaFiles').value = '';
-      el('mediaCaption').value = '';
-      renderProjects();
-      await renderProjectMediaGallery();
-      if (state.currentDetailProjectId === projectId) await renderProjectDetail(projectId);
-    }
-
-    window.viewMedia = async function(id) {
-      const item = await getMediaById(id);
-      if (!item) return;
-      const url = URL.createObjectURL(item.fullBlob);
-      window.open(url, '_blank', 'noopener');
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-    }
-
-    window.setProjectCover = async function(mediaId) {
-      const projectId = el('projectId').value || (await getMediaById(mediaId))?.projectId;
-      const project = getProjectById(projectId);
-      const mediaItems = await getProjectMedia(projectId);
-      if (!project) return;
-      project.coverMediaId = mediaId;
-      const cover = mediaItems.find(item => item.id === mediaId && item.kind !== 'plan');
-      project.coverThumb = cover?.thumbDataUrl || '';
-      project.mediaCount = mediaItems.length;
-      saveState();
-      renderProjects();
-      await renderProjectMediaGallery();
-      if (state.currentDetailProjectId === projectId) await renderProjectDetail(projectId);
-    }
-
-    window.deleteMedia = async function(mediaId) {
-      const item = await getMediaById(mediaId);
-      if (!item) return;
-      await deleteMediaRecord(mediaId);
-      await syncProjectMediaSummary(item.projectId);
-      renderProjects();
-      await renderProjectMediaGallery();
-      if (state.currentDetailProjectId === item.projectId) await renderProjectDetail(item.projectId);
-    }
-
-
-
-    function getProjectImages(projectId) {
-      return getProjectMedia(projectId).then(items => items.filter(item => item.kind !== 'plan'));
-    }
-
-    function countProjectPlans(items) {
-      return items.filter(item => item.kind === 'plan').length;
-    }
-
-    function summarizeProject(project, mediaItems) {
-      const planCount = countProjectPlans(mediaItems);
-      const imageCount = mediaItems.filter(item => item.kind !== 'plan').length;
-      const joinery = (project.joinery || []).length ? project.joinery.join(', ') : 'Not listed';
-      return {
-        imageCount,
-        planCount,
-        joinery
-      };
-    }
-
-    function setDetailHeaderCover(dataUrl) {
-      const header = el('detailHeader');
-      if (dataUrl) {
-        header.classList.add('has-cover');
-        header.style.setProperty('--detail-cover', `url(${JSON.stringify(dataUrl).slice(1,-1)})`);
-        header.style.setProperty('background-image', `linear-gradient(135deg, rgba(122,75,36,0.6), rgba(58,35,18,0.8)), url(${dataUrl})`);
-        header.style.backgroundSize = 'cover';
-        header.style.backgroundPosition = 'center';
-      } else {
-        header.classList.remove('has-cover');
-        header.style.backgroundImage = 'linear-gradient(135deg, rgba(122,75,36,0.98), rgba(58,35,18,0.96))';
-      }
-    }
-
-    function fillDetailNoteFields(project) {
-      el('detailDesignNotes').value = project.designNotes || '';
-      el('detailBuildNotes').value = project.buildNotes || '';
-      el('detailFinishingNotes').value = project.finishingNotes || '';
-      el('detailExtraNotes').value = project.extraNotes || '';
-    }
-
-    async function renderProjectDetail(projectId = state.currentDetailProjectId) {
-      const panel = el('projectDetailPanel');
-      if (!projectId) {
-        panel.classList.add('hidden');
-        return;
-      }
-      const project = getProjectById(projectId);
-      if (!project) {
-        state.currentDetailProjectId = '';
-        saveState();
-        panel.classList.add('hidden');
-        return;
-      }
-      state.currentDetailProjectId = projectId;
-      saveState();
-      const mediaItems = await getProjectMedia(projectId);
-      const summary = summarizeProject(project, mediaItems);
-      panel.classList.remove('hidden');
-      el('detailProjectTitle').textContent = project.name || 'Untitled project';
-      el('detailProjectSubtitle').textContent = `${project.category || 'Project'} • ${project.wood || 'Wood not listed'}`;
-      el('detailHeaderBadges').innerHTML = `
-        <span class="detail-chip">${escapeHtml(project.status || 'Idea')}</span>
-        <span class="detail-chip">${escapeHtml(project.wood || 'Wood not listed')}</span>
-        <span class="detail-chip">${summary.imageCount} photos</span>
-        <span class="detail-chip">${summary.planCount} PDFs</span>
-      `;
-      el('detailSummaryBadges').innerHTML = `
-        <span class="pill">${escapeHtml(project.category || 'Project')}</span>
-        <span class="pill">Joinery: ${escapeHtml(summary.joinery)}</span>
-      `;
-      el('detailSummaryKv').innerHTML = `
-        <div><strong>Estimate</strong>${formatNumber(project.estimateHours)} h</div>
-        <div><strong>Actual</strong>${formatNumber(project.actualHours)} h</div>
-        <div><strong>Cost</strong>$${formatNumber(project.cost)}</div>
-        <div><strong>Started</strong>${escapeHtml(project.startDate || '—')}</div>
-      `;
-      el('detailCurrentFocus').innerHTML = `${project.nextStep ? `<strong>Next:</strong> ${escapeHtml(project.nextStep)}` : 'Add a next step on the main project form to keep this section action-oriented.'}${project.lessons ? `<div style="margin-top:10px;"><strong>Lessons:</strong> ${escapeHtml(project.lessons)}</div>` : ''}`;
-      const cover = mediaItems.find(item => item.id === project.coverMediaId && item.kind !== 'plan') || mediaItems.find(item => item.kind !== 'plan');
-      const coverPreview = el('detailCoverPreview');
-      if (cover?.thumbDataUrl) {
-        coverPreview.src = cover.thumbDataUrl;
-        coverPreview.classList.remove('hidden');
-      } else {
-        coverPreview.classList.add('hidden');
-        coverPreview.removeAttribute('src');
-      }
-      setDetailHeaderCover(cover?.thumbDataUrl || '');
-      fillDetailNoteFields(project);
-      await renderDetailMediaGallery();
-      await renderDetailPlans();
-    }
-
-    async function renderDetailMediaGallery() {
-      const projectId = state.currentDetailProjectId;
-      const gallery = el('detailMediaGallery');
-      if (!projectId) {
-        gallery.innerHTML = '<div class="empty-inline">Open a project to see its media.</div>';
-        el('detailMediaCount').textContent = '0 items';
-        return;
-      }
-      const filter = el('detailMediaFilter').value;
-      const items = (await getProjectMedia(projectId)).filter(item => item.kind !== 'plan');
-      const filtered = filter === 'all' ? items : items.filter(item => item.stage === filter);
-      el('detailMediaCount').textContent = `${items.length} item${items.length === 1 ? '' : 's'}`;
-      if (!filtered.length) {
-        gallery.innerHTML = '<div class="empty-inline">No media in this filter yet.</div>';
-        return;
-      }
-      const project = getProjectById(projectId);
-      gallery.innerHTML = filtered.map(item => `
-        <article class="detail-gallery-card">
-          <img src="${item.thumbDataUrl}" alt="${escapeAttribute(item.caption || item.filename || 'Project image')}">
-          <div class="body">
-            <strong>${escapeHtml(item.caption || item.filename || item.type)}</strong>
-            <div class="small muted">${escapeHtml(item.stage || 'Stage')} • ${escapeHtml(item.type || 'Media')}</div>
-            <div class="media-actions">
-              <button type="button" onclick="viewMedia('${item.id}')">View</button>
-              <button type="button" onclick="setProjectCover('${item.id}')">${project?.coverMediaId === item.id ? 'Cover Set' : 'Set Cover'}</button>
-              <button type="button" class="danger" onclick="deleteMedia('${item.id}')">Delete</button>
-            </div>
-          </div>
-        </article>
-      `).join('');
-    }
-
-    async function renderDetailPlans() {
-      const projectId = state.currentDetailProjectId;
-      const list = el('detailPlansList');
-      if (!projectId) {
-        list.innerHTML = '<div class="empty-inline">Open a project to manage plan PDFs.</div>';
-        el('detailPlanCount').textContent = '0 files';
-        return;
-      }
-      const items = (await getProjectMedia(projectId)).filter(item => item.kind === 'plan');
-      el('detailPlanCount').textContent = `${items.length} file${items.length === 1 ? '' : 's'}`;
-      if (!items.length) {
-        list.innerHTML = '<div class="empty-inline">No plan PDFs saved for this project yet.</div>';
-        return;
-      }
-      list.innerHTML = items.map(item => `
-        <article class="plan-card">
-          <div class="plan-icon">PDF</div>
-          <div class="body">
-            <strong>${escapeHtml(item.caption || item.filename || 'Plan')}</strong>
-            <div class="small muted">${escapeHtml(item.filename || '')}</div>
-            <div class="media-actions">
-              <button type="button" onclick="viewMedia('${item.id}')">Open</button>
-              <button type="button" class="danger" onclick="deleteMedia('${item.id}')">Delete</button>
-            </div>
-          </div>
-        </article>
-      `).join('');
-    }
-
-    async function uploadPlanPdf() {
-      const file = el('detailPlanFile').files?.[0];
-      if (!file) {
-        alert('Choose a PDF file first.');
-        return;
-      }
-      const projectId = state.currentDetailProjectId || ensureCurrentProjectId();
-      const items = await getProjectMedia(projectId);
-      const caption = el('detailPlanLabel').value.trim() || file.name.replace(/\.[^.]+$/, '');
-      await putMediaRecord({
-        id: uid(),
-        projectId,
-        kind: 'plan',
-        filename: file.name,
-        caption,
-        stage: 'Planning',
-        type: 'Plan PDF',
-        thumbDataUrl: '',
-        fullBlob: file,
-        sortOrder: items.length,
-        createdAt: new Date().toISOString()
-      });
-      el('detailPlanFile').value = '';
-      el('detailPlanLabel').value = '';
-      await syncProjectMediaSummary(projectId);
-      renderProjects();
-      await renderProjectDetail(projectId);
-    }
-
-    function saveDetailNotes() {
-      const projectId = state.currentDetailProjectId;
-      const project = getProjectById(projectId);
-      if (!project) return;
-      project.designNotes = el('detailDesignNotes').value.trim();
-      project.buildNotes = el('detailBuildNotes').value.trim();
-      project.finishingNotes = el('detailFinishingNotes').value.trim();
-      project.extraNotes = el('detailExtraNotes').value.trim();
-      saveState();
-      renderProjects();
-    }
-
-    window.openProjectDetail = async function(id) {
-      await renderProjectDetail(id);
-      el('projectDetailPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    window.closeProjectDetail = function() {
-      state.currentDetailProjectId = '';
-      saveState();
-      el('projectDetailPanel').classList.add('hidden');
-    }
-
-    window.editCurrentDetailProject = function() {
-      if (state.currentDetailProjectId) editProject(state.currentDetailProjectId);
-    }
-
-    function projectStatusBadge(status) {
-      if (status === 'Complete') return 'good';
-      if (['Assembly', 'Finishing', 'Joinery'].includes(status)) return 'warn';
-      return '';
-    }
-
-    function renderProjectStats() {
-      const projects = state.projects;
-      const total = projects.length;
-      const complete = projects.filter(p => p.status === 'Complete').length;
-      const active = projects.filter(p => p.status !== 'Complete').length;
-      const hours = projects.reduce((sum, p) => sum + (Number(p.actualHours) || 0), 0);
-      const cost = projects.reduce((sum, p) => sum + (Number(p.cost) || 0), 0);
-
-      el('projectStats').innerHTML = `
-        <div class="stat"><div class="muted">Total Projects</div><div class="value">${total}</div></div>
-        <div class="stat"><div class="muted">Completed</div><div class="value">${complete}</div></div>
-        <div class="stat"><div class="muted">Active</div><div class="value">${active}</div></div>
-        <div class="stat"><div class="muted">Logged Hours / Spend</div><div class="value">${formatNumber(hours)}h / $${formatNumber(cost)}</div></div>
-      `;
-    }
-
-    function renderProjects() {
-      renderProjectStats();
-      const list = el('projectList');
-      const filterStatus = el('projectFilterStatus').value;
-      const query = el('projectSearch').value.trim().toLowerCase();
-
-      let projects = [...state.projects].sort((a, b) => (b.startDate || '').localeCompare(a.startDate || ''));
-      if (filterStatus !== 'all') projects = projects.filter(p => p.status === filterStatus);
-      if (query) {
-        projects = projects.filter(p => [p.name, p.category, p.wood, p.lessons, p.nextStep, (p.joinery || []).join(' ')].join(' ').toLowerCase().includes(query));
-      }
-
-      if (!projects.length) {
-        list.innerHTML = '<div class="empty">No matching projects yet.</div>';
-        return;
-      }
-
-      list.innerHTML = projects.map(project => `
-        <article class="card">
-          <div class="card-header">
-            <div>
-              <h4>${escapeHtml(project.name)}</h4>
-              <div class="small muted">${escapeHtml(project.category || 'Project')} • ${escapeHtml(project.wood || 'Wood not listed')}</div>
-            </div>
-            <span class="badge ${projectStatusBadge(project.status)}">${escapeHtml(project.status)}</span>
-          </div>
-          <div class="meta">
-            <div><strong>Estimate:</strong> ${formatNumber(project.estimateHours)} h</div>
-            <div><strong>Actual:</strong> ${formatNumber(project.actualHours)} h</div>
-            <div><strong>Cost:</strong> $${formatNumber(project.cost)}</div>
-            <div><strong>Started:</strong> ${project.startDate || '—'}</div>
-          </div>
-          ${project.coverThumb ? `<img class="project-cover" src="${project.coverThumb}" alt="${escapeAttribute(project.name)} cover image">` : ''}
-          ${(project.joinery || []).length ? `<div class="pill-row">${project.joinery.map(j => `<span class="pill">${escapeHtml(j)}</span>`).join('')}</div>` : ''}
-          ${(project.mediaCount || 0) ? `<div class="meta"><div><strong>Media:</strong> ${project.mediaCount}</div><div><strong>Cover:</strong> ${project.coverMediaId ? 'Set' : 'None'}</div></div>` : ''}
-          ${project.lessons ? `<p><strong>Lessons:</strong> ${escapeHtml(project.lessons)}</p>` : ''}
-          ${project.nextStep ? `<p><strong>Next:</strong> ${escapeHtml(project.nextStep)}</p>` : ''}
-          ${(project.designNotes || project.buildNotes || project.finishingNotes || project.extraNotes) ? `<div class="meta"><div><strong>Detail notes:</strong> ${[project.designNotes, project.buildNotes, project.finishingNotes, project.extraNotes].filter(Boolean).length}</div><div><strong>Plans:</strong> ${(project.mediaCount || 0) && project.mediaCount > (project.coverThumb ? 1 : 0) ? 'See detail' : '—'}</div></div>` : ''}
-          <div class="actions">
-            <button type="button" class="primary" onclick="openProjectDetail('${project.id}')">Details</button>
-            <button type="button" onclick="editProject('${project.id}')">Edit</button>
-            <button type="button" class="danger" onclick="deleteProject('${project.id}')">Delete</button>
-          </div>
-        </article>
-      `).join('');
-    }
-
-    function escapeHtml(str = '') {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function escapeAttribute(str = '') {
-      return escapeHtml(str);
-    }
-
-    window.editProject = function(id) {
-      const project = state.projects.find(p => p.id === id);
-      if (!project) return;
-      el('projectId').value = project.id;
-      el('projectName').value = project.name || '';
-      el('projectCategory').value = project.category || 'Other';
-      el('projectStatus').value = project.status || 'Idea';
-      el('projectWood').value = project.wood || '';
-      el('projectEstimateHours').value = project.estimateHours ?? '';
-      el('projectActualHours').value = project.actualHours ?? '';
-      el('projectCost').value = project.cost ?? '';
-      el('projectStartDate').value = project.startDate || '';
-      el('projectEndDate').value = project.endDate || '';
-      el('projectLessons').value = project.lessons || '';
-      el('projectNextStep').value = project.nextStep || '';
-      setCheckedValues('projectJoineryChips', project.joinery || []);
-      renderProjectMediaGallery();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    window.deleteProject = async function(id) {
-      const mediaItems = await getProjectMedia(id);
-      for (const item of mediaItems) await deleteMediaRecord(item.id);
-      state.projects = state.projects.filter(p => p.id !== id);
-      saveState();
-      renderProjects();
-      if (el('projectId').value === id) clearProjectForm();
-    }
-
-    function handleProjectSubmit(evt) {
-      evt.preventDefault();
-      const id = el('projectId').value || uid();
-      const project = {
-        id,
-        name: el('projectName').value.trim(),
-        category: el('projectCategory').value,
-        status: el('projectStatus').value,
-        wood: el('projectWood').value.trim(),
-        estimateHours: el('projectEstimateHours').value,
-        actualHours: el('projectActualHours').value,
-        cost: el('projectCost').value,
-        startDate: el('projectStartDate').value,
-        endDate: el('projectEndDate').value,
-        lessons: el('projectLessons').value.trim(),
-        nextStep: el('projectNextStep').value.trim(),
-        joinery: getCheckedValues('projectJoineryChips'),
-        mediaCount: 0,
-        coverMediaId: '',
-        coverThumb: ''
-      };
-
-      const existingIndex = state.projects.findIndex(p => p.id === id);
-      if (existingIndex >= 0) {
-        const existing = state.projects[existingIndex];
-        project.mediaCount = existing.mediaCount || 0;
-        project.coverMediaId = existing.coverMediaId || '';
-        project.coverThumb = existing.coverThumb || '';
-        state.projects[existingIndex] = project;
-      } else state.projects.push(project);
-      saveState();
-      syncProjectMediaSummary(id).then(() => { renderProjects(); renderProjectMediaGallery(); });
-      clearProjectForm();
-      renderProjects();
-    }
-
-    function renderBoardsAndParts() {
-      const boardsEl = el('boardList');
-      const partsEl = el('partList');
-      const unit = el('unitLabel').value;
-
-      boardsEl.innerHTML = state.optimizer.boards.length
-        ? state.optimizer.boards.map(board => `
-          <div class="card">
-            <div class="card-header">
-              <div><h4>${escapeHtml(board.name)}</h4><div class="small muted">${formatNumber(board.length)} × ${formatNumber(board.width)} ${unit}</div></div>
-              <button class="danger" onclick="removeBoard('${board.id}')">Remove</button>
-            </div>
-          </div>
-        `).join('')
-        : '<div class="empty">No boards added yet.</div>';
-
-      partsEl.innerHTML = state.optimizer.parts.length
-        ? state.optimizer.parts.map(part => `
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <h4>${escapeHtml(part.name)} <span class="small muted">× ${formatNumber(part.qty)}</span></h4>
-                <div class="small muted">${formatNumber(part.length)} × ${formatNumber(part.width)} × ${formatNumber(part.thickness)} ${unit} • ${part.grain === 'length' ? 'grain along length' : 'either orientation'}</div>
-              </div>
-              <button class="danger" onclick="removePart('${part.id}')">Remove</button>
-            </div>
-          </div>
-        `).join('')
-        : '<div class="empty">No parts added yet.</div>';
-    }
-
-    window.removeBoard = function(id) {
-      state.optimizer.boards = state.optimizer.boards.filter(b => b.id !== id);
-      saveState();
-      renderBoardsAndParts();
-    }
-
-    window.removePart = function(id) {
-      state.optimizer.parts = state.optimizer.parts.filter(p => p.id !== id);
-      saveState();
-      renderBoardsAndParts();
-    }
-
-    function addBoard() {
-      const name = el('boardName').value.trim();
-      const length = Number(el('boardLength').value);
-      const width = Number(el('boardWidth').value);
-      if (!name || !(length > 0) || !(width > 0)) return;
-      state.optimizer.boards.push({ id: uid(), name, length, width });
-      saveState();
-      el('boardName').value = '';
-      el('boardLength').value = '';
-      el('boardWidth').value = '';
-      renderBoardsAndParts();
-    }
-
-    function addPart() {
-      const name = el('partName').value.trim();
-      const qty = Number(el('partQty').value);
-      const length = Number(el('partLength').value);
-      const width = Number(el('partWidth').value);
-      const thickness = Number(el('partThickness').value);
-      const grain = el('partGrain').value;
-      if (!name || !(qty > 0) || !(length > 0) || !(width > 0) || !(thickness > 0)) return;
-      state.optimizer.parts.push({ id: uid(), name, qty, length, width, thickness, grain });
-      saveState();
-      el('partName').value = '';
-      el('partQty').value = 1;
-      el('partLength').value = '';
-      el('partWidth').value = '';
-      el('partThickness').value = '';
-      el('partGrain').value = 'length';
-      renderBoardsAndParts();
-    }
-
-    function runOptimizer() {
-      const boards = state.optimizer.boards.map(b => ({ ...b, remainingLength: Number(b.length), remainingWidth: Number(b.width), usedArea: 0, cuts: [] }));
-      const kerf = Number(el('kerf').value) || 0;
-      const trimAllowance = Number(el('trimAllowance').value) || 0;
-      const unit = el('unitLabel').value;
-
-      const expandedParts = [];
-      state.optimizer.parts.forEach(part => {
-        for (let i = 0; i < Number(part.qty); i += 1) {
-          expandedParts.push({
-            id: uid(),
-            name: part.name,
-            length: Number(part.length) + trimAllowance,
-            width: Number(part.width),
-            thickness: Number(part.thickness),
-            grain: part.grain
-          });
-        }
-      });
-
-      if (!boards.length || !expandedParts.length) {
-        el('optimizerSummary').className = 'empty';
-        el('optimizerSummary').innerHTML = 'You need at least one board and one part.';
-        el('optimizerResults').innerHTML = '';
-        return;
-      }
-
-      expandedParts.sort((a, b) => (b.length * b.width) - (a.length * a.width));
-      const unassigned = [];
-
-      for (const part of expandedParts) {
-        let placed = false;
-        for (const board of boards) {
-          const canFitNormal = part.length + kerf <= board.remainingLength && part.width <= board.width;
-          const canFitRotated = part.grain === 'either' && part.width + kerf <= board.remainingLength && part.length <= board.width;
-          if (canFitNormal || canFitRotated) {
-            const rotated = !canFitNormal && canFitRotated;
-            const cutLength = rotated ? part.width : part.length;
-            const cutWidth = rotated ? part.length : part.width;
-            board.cuts.push({ ...part, rotated, cutLength, cutWidth });
-            board.remainingLength -= (cutLength + kerf);
-            board.usedArea += (cutLength * cutWidth);
-            placed = true;
-            break;
-          }
-        }
-        if (!placed) unassigned.push(part);
-      }
-
-      const totalBoardArea = boards.reduce((sum, b) => sum + (b.length * b.width), 0);
-      const usedArea = boards.reduce((sum, b) => sum + b.usedArea, 0);
-      const wastePct = totalBoardArea ? ((totalBoardArea - usedArea) / totalBoardArea) * 100 : 0;
-      const usedBoards = boards.filter(b => b.cuts.length > 0).length;
-
-      el('optimizerSummary').className = 'panel';
-      el('optimizerSummary').innerHTML = `
-        <div class="form-grid-3">
-          <div><strong>${usedBoards}</strong><div class="muted small">Boards used</div></div>
-          <div><strong>${expandedParts.length - unassigned.length}/${expandedParts.length}</strong><div class="muted small">Parts assigned</div></div>
-          <div><strong>${wastePct.toFixed(1)}%</strong><div class="muted small">Estimated waste by area</div></div>
+    const totalBoardLength = boards.reduce((s,b)=>s+b.length,0);
+    const usedLength = boards.reduce((s,b)=>s+(b.length-b.remaining),0);
+    el('cutSummary').innerHTML = `<div class="pill-row">
+      <span class="pill">Boards: ${boards.length}</span>
+      <span class="pill">Parts placed: ${parts.length - unplaced.length}/${parts.length}</span>
+      <span class="pill">Used length: ${fmt(usedLength)} mm</span>
+      <span class="pill">Remaining length: ${fmt(totalBoardLength - usedLength)} mm</span>
+    </div>`;
+    el('cutOutput').innerHTML = boards.map(board => `
+      <div class="cut-board">
+        <div style="font-weight:700">${esc(board.label)}</div>
+        <div class="small muted">${board.length} × ${board.width} × ${board.thickness} mm • Remaining ${fmt(board.remaining)} mm</div>
+        <ul>${board.cuts.length ? board.cuts.map(c=>`<li>${esc(c.label)} — ${c.length} × ${c.width} × ${c.thickness} mm</li>`).join('') : '<li>No assigned parts</li>'}</ul>
+      </div>
+    `).join('') + (unplaced.length ? `<div class="cut-board"><div style="font-weight:700">Unplaced parts</div><ul>${unplaced.map(c=>`<li>${esc(c.label)} — ${c.length} × ${c.width} × ${c.thickness} mm</li>`).join('')}</ul></div>` : '');
+  }
+
+  function recommendJoinery(){
+    const load = el('joineryLoad').value;
+    const visibility = el('joineryVisibility').value;
+    const tools = el('joineryTools').value;
+    const type = el('joineryProjectType').value;
+    const suggestions = [];
+    if (type === 'table' || type === 'frame') suggestions.push({name:'Mortise & Tenon', why:'Excellent for legs, rails, and long-term racking resistance.', best:(load !== 'light')});
+    if (type === 'casework') suggestions.push({name:'Rabbet & Dado', why:'Strong, square, and efficient for cabinets or shelves.', best:true});
+    if (type === 'drawer') suggestions.push({name:'Dovetail', why:'Classic drawer joinery with strong mechanical resistance.', best:(visibility === 'featured')});
+    if (tools === 'power') suggestions.push({name:'Loose Tenon / Domino', why:'Fast alignment and strong joints with machine workflow.', best:(load !== 'light')});
+    if (tools === 'hand') suggestions.push({name:'Bridle Joint', why:'Accessible with hand tools and visually clear for frames or stools.', best:(visibility === 'featured')});
+    if (load === 'light' && visibility === 'hidden') suggestions.push({name:'Pocket Hole', why:'Quick hidden joinery for lighter-duty pieces and utility work.', best:true});
+    if (!suggestions.length) suggestions.push({name:'Dowel Joinery', why:'Good middle ground when you want repeatability without featured joinery.', best:true});
+    el('joineryResults').innerHTML = suggestions.slice(0,4).map(s => `
+      <div class="card">
+        <div class="card-header">
+          <h4>${esc(s.name)}</h4>
+          <span class="badge ${s.best ? 'progress' : 'planning'}">${s.best ? 'Strong fit' : 'Worth considering'}</span>
         </div>
-        <p class="small muted" style="margin-top:10px;">Method: simple first-fit board assignment. It respects board length, width, kerf, and optional rotation when grain direction allows it.</p>
-      `;
+        <p class="muted">${esc(s.why)}</p>
+      </div>
+    `).join('');
+  }
 
-      el('optimizerResults').innerHTML = boards.map(board => {
-        const wasteArea = (board.length * board.width) - board.usedArea;
-        return `
-          <article class="card">
-            <div class="card-header">
-              <div>
-                <h4>${escapeHtml(board.name)}</h4>
-                <div class="small muted">${formatNumber(board.length)} × ${formatNumber(board.width)} ${unit}</div>
-              </div>
-              <span class="badge">Remaining length: ${formatNumber(Math.max(board.remainingLength, 0))} ${unit}</span>
-            </div>
-            ${board.cuts.length ? `
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr><th>Part</th><th>Cut size</th><th>Thickness</th><th>Notes</th></tr>
-                  </thead>
-                  <tbody>
-                    ${board.cuts.map(cut => `
-                      <tr>
-                        <td>${escapeHtml(cut.name)}</td>
-                        <td>${formatNumber(cut.cutLength)} × ${formatNumber(cut.cutWidth)} ${unit}</td>
-                        <td>${formatNumber(cut.thickness)} ${unit}</td>
-                        <td>${cut.rotated ? 'Rotated to fit' : 'Standard orientation'}</td>
-                      </tr>
-                    `).join('')}
-                  </tbody>
-                </table>
-              </div>
-              <p class="small muted" style="margin-top:10px;">Used area: ${formatNumber(board.usedArea)} sq ${unit}. Waste area on board: ${formatNumber(Math.max(wasteArea, 0))} sq ${unit}.</p>
-            ` : '<div class="empty">No parts assigned to this board.</div>'}
-          </article>
-        `;
-      }).join('') + (unassigned.length ? `
-        <article class="card">
-          <h4>Unassigned Parts</h4>
-          <div class="table-wrap" style="margin-top:10px;">
-            <table>
-              <thead><tr><th>Part</th><th>Needed size</th><th>Reason</th></tr></thead>
-              <tbody>
-                ${unassigned.map(part => `
-                  <tr>
-                    <td>${escapeHtml(part.name)}</td>
-                    <td>${formatNumber(part.length)} × ${formatNumber(part.width)} ${unit}</td>
-                    <td>No remaining board could fit this part</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
+  function generateIdeas(count = 3, surprise = false){
+    const hours = Number(el('timeAvailable').value || 0);
+    const toolStyle = el('toolStyle').value;
+    const difficulty = el('difficulty').value;
+    const type = el('projectIdeaType').value;
+    const material = el('materialPref').value;
+    const skill = el('skillFocus').value;
+    let pool = randomProjectIdeas.filter(item => surprise || (
+      hours >= item.minHours &&
+      hours <= (item.maxHours + 1) &&
+      (toolStyle === 'any' || item.toolStyle === toolStyle) &&
+      (difficulty === 'any' || item.difficulty === Number(difficulty)) &&
+      (type === 'any' || item.type === type) &&
+      (material === 'any' || item.material === material) &&
+      (skill === 'any' || item.skillTags.includes(skill))
+    ));
+    if (!pool.length) pool = randomProjectIdeas.filter(item => hours <= 2 ? item.shortWindow : true);
+    pool = pool.sort(() => Math.random() - 0.5).slice(0, count);
+    el('randomIdeas').innerHTML = pool.map(item => `
+      <div class="idea-card">
+        <div class="card-header">
+          <div>
+            <h4>${esc(item.name)}</h4>
+            <div class="small muted">${item.minHours}–${item.maxHours} h • ${esc(item.type)} • difficulty ${item.difficulty}</div>
           </div>
-        </article>
-      ` : '');
-    }
+          <span class="pill">${esc(item.material)}</span>
+        </div>
+        <p>${esc(item.description)}</p>
+        <div class="small muted"><strong>Materials:</strong> ${esc(item.materials)}</div>
+        <div class="small muted" style="margin-top:4px"><strong>First steps:</strong> ${esc(item.firstSteps)}</div>
+      </div>
+    `).join('');
+  }
 
-    const joineryDatabase = [
-      {
-        name: 'Mortise & Tenon',
-        load: 5, hidden: 4, featured: 3, beginner: 1, intermediate: 4, advanced: 5,
-        fast: 1, balanced: 4, slow: 5, movement: 5,
-        tools: ['Router', 'Chisels', 'Table Saw', 'Drill/Driver'],
-        projectFit: { table: 5, frame: 5, casework: 3, drawer: 2, general: 5 },
-        note: 'Classic furniture joint with excellent strength and racking resistance.'
-      },
-      {
-        name: 'Loose Tenon / Domino',
-        load: 5, hidden: 5, featured: 2, beginner: 2, intermediate: 5, advanced: 5,
-        fast: 5, balanced: 5, slow: 4, movement: 4,
-        tools: ['Domino'],
-        projectFit: { table: 5, frame: 5, casework: 4, drawer: 2, general: 5 },
-        note: 'Fast, accurate, and strong if you have the machine.'
-      },
-      {
-        name: 'Dowel Joinery',
-        load: 3, hidden: 5, featured: 1, beginner: 3, intermediate: 4, advanced: 3,
-        fast: 4, balanced: 4, slow: 3, movement: 3,
-        tools: ['Dowel Jig', 'Drill/Driver', 'Drill Press'],
-        projectFit: { table: 3, frame: 3, casework: 4, drawer: 2, general: 4 },
-        note: 'A practical alignment and joinery method with modest tooling cost.'
-      },
-      {
-        name: 'Pocket Hole',
-        load: 2, hidden: 4, featured: 1, beginner: 5, intermediate: 3, advanced: 2,
-        fast: 5, balanced: 4, slow: 2, movement: 2,
-        tools: ['Pocket Hole Jig', 'Drill/Driver'],
-        projectFit: { table: 2, frame: 3, casework: 4, drawer: 1, general: 3 },
-        note: 'Fast and forgiving, especially for utility builds and hidden face-frame work.'
-      },
-      {
-        name: 'Dovetail',
-        load: 4, hidden: 1, featured: 5, beginner: 1, intermediate: 3, advanced: 5,
-        fast: 1, balanced: 3, slow: 5, movement: 4,
-        tools: ['Chisels', 'Hand Saw', 'Router'],
-        projectFit: { table: 1, frame: 1, casework: 2, drawer: 5, general: 3 },
-        note: 'A visual statement joint especially well suited to drawers and boxes.'
-      },
-      {
-        name: 'Box Joint',
-        load: 3, hidden: 1, featured: 4, beginner: 2, intermediate: 4, advanced: 4,
-        fast: 3, balanced: 4, slow: 4, movement: 3,
-        tools: ['Table Saw', 'Router'],
-        projectFit: { table: 1, frame: 1, casework: 2, drawer: 4, general: 2 },
-        note: 'Strong and repeatable with a jig, especially for boxes and utility drawers.'
-      },
-      {
-        name: 'Bridle Joint',
-        load: 4, hidden: 2, featured: 4, beginner: 2, intermediate: 4, advanced: 4,
-        fast: 2, balanced: 4, slow: 4, movement: 4,
-        tools: ['Table Saw', 'Band Saw', 'Chisels'],
-        projectFit: { table: 4, frame: 5, casework: 2, drawer: 1, general: 4 },
-        note: 'Excellent for frames, legs, and visible structural joinery.'
-      },
-      {
-        name: 'Rabbet & Dado',
-        load: 3, hidden: 4, featured: 1, beginner: 3, intermediate: 5, advanced: 4,
-        fast: 4, balanced: 5, slow: 3, movement: 2,
-        tools: ['Table Saw', 'Router'],
-        projectFit: { table: 1, frame: 1, casework: 5, drawer: 2, general: 4 },
-        note: 'A staple for casework and shelving, balancing strength, alignment, and speed.'
-      },
-      {
-        name: 'Mitred Spline',
-        load: 2, hidden: 2, featured: 5, beginner: 2, intermediate: 4, advanced: 4,
-        fast: 2, balanced: 4, slow: 4, movement: 2,
-        tools: ['Table Saw', 'Router'],
-        projectFit: { table: 1, frame: 3, casework: 2, drawer: 3, general: 2 },
-        note: 'Good for clean corners with decorative reinforcement.'
-      },
-      {
-        name: 'Sliding Dovetail',
-        load: 4, hidden: 3, featured: 4, beginner: 1, intermediate: 3, advanced: 5,
-        fast: 1, balanced: 3, slow: 5, movement: 4,
-        tools: ['Router', 'Chisels', 'Table Saw'],
-        projectFit: { table: 3, frame: 1, casework: 4, drawer: 2, general: 4 },
-        note: 'A sophisticated mechanical joint that can lock shelves or rails into place.'
-      },
-      {
-        name: 'Butt Joint + Screws',
-        load: 1, hidden: 3, featured: 1, beginner: 5, intermediate: 2, advanced: 1,
-        fast: 5, balanced: 2, slow: 1, movement: 1,
-        tools: ['Drill/Driver'],
-        projectFit: { table: 1, frame: 1, casework: 2, drawer: 1, general: 1 },
-        note: 'Best for shop fixtures, prototypes, and very simple utility pieces.'
-      }
-    ];
+  function initPwa(){
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      el('installBtn').style.display = 'inline-flex';
+      el('installBanner').style.display = 'block';
+    });
+    el('installBtn').addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      el('installBtn').style.display = 'none';
+    });
+  }
 
-    function runJoinerySelector() {
-      const loadMap = { light: 1, medium: 3, heavy: 5 };
-      const visibilityMap = { hidden: 'hidden', either: 'either', featured: 'featured' };
-      const skillKey = el('joinerySkill').value;
-      const speedKey = el('joinerySpeed').value;
-      const movementMap = { low: 1, medium: 3, high: 5 };
-      const projectType = el('joineryProjectType').value;
-      const selectedTools = getCheckedValues('toolChips');
-      const targetLoad = loadMap[el('joineryLoad').value];
-      const targetMovement = movementMap[el('joineryMovement').value];
-      const visibility = visibilityMap[el('joineryVisibility').value];
-
-      const scored = joineryDatabase.map(item => {
-        let score = 0;
-        score += 6 - Math.abs(item.load - targetLoad);
-        score += item[skillKey];
-        score += item[speedKey];
-        score += 6 - Math.abs(item.movement - targetMovement);
-        score += item.projectFit[projectType] || item.projectFit.general || 0;
-
-        if (visibility === 'hidden') score += item.hidden;
-        else if (visibility === 'featured') score += item.featured;
-        else score += Math.max(item.hidden, item.featured) * 0.6;
-
-        const matchedTools = item.tools.filter(tool => selectedTools.includes(tool));
-        score += matchedTools.length * 1.4;
-        if (item.tools.length && matchedTools.length === 0) score -= 2.5;
-
-        return { ...item, score, matchedTools };
-      }).sort((a, b) => b.score - a.score);
-
-      const top = scored.slice(0, 5);
-      el('joineryResults').className = '';
-      el('joineryResults').innerHTML = top.map((item, index) => {
-        const reasons = [];
-        if (item.load >= targetLoad - 1) reasons.push('fits the strength requirement');
-        if ((visibility === 'hidden' && item.hidden >= 4) || (visibility === 'featured' && item.featured >= 4)) reasons.push('matches the look you want');
-        if (item.projectFit[projectType] >= 4) reasons.push('suits this project type well');
-        if (item.matchedTools.length) reasons.push(`works with your tools: ${item.matchedTools.join(', ')}`);
-        if (item[speedKey] >= 4) reasons.push('aligns with your preferred pace');
-
-        const maxScore = top[0]?.score || 1;
-        const pct = Math.max(10, Math.round((item.score / maxScore) * 100));
-
-        return `
-          <article class="card" style="margin-bottom:12px;">
-            <div class="card-header">
-              <div>
-                <h4>${index + 1}. ${escapeHtml(item.name)}</h4>
-                <div class="small muted">${escapeHtml(item.note)}</div>
-              </div>
-              <span class="badge ${index === 0 ? 'good' : ''}">Score ${item.score.toFixed(1)}</span>
-            </div>
-            <div class="score-bar"><div class="score-fill" style="width:${pct}%;"></div></div>
-            <p><strong>Why it ranks well:</strong> ${escapeHtml(reasons.join('; ') || 'a balanced match for your constraints')}.</p>
-            <p class="small muted"><strong>Typical tools:</strong> ${escapeHtml(item.tools.join(', '))}</p>
-          </article>
-        `;
-      }).join('');
-    }
-
-
-    function difficultyValue(level) {
-      return level === 'easy' ? 1 : level === 'moderate' ? 2 : 3;
-    }
-
-    function ideaDifficultyLabel(value) {
-      return value === 1 ? 'Easy win' : value === 2 ? 'Moderate' : 'Stretch';
-    }
-
-    function typeLabel(value) {
-      return value === 'shop' ? 'Shop aid'
-        : value === 'home' ? 'Home accessory'
-        : value === 'component' ? 'Furniture component / practice piece'
-        : 'Small furniture';
-    }
-
-    function toolStyleLabel(value) {
-      return value === 'hand' ? 'Hand-tool friendly'
-        : value === 'power' ? 'Machine / power tool friendly'
-        : 'Mixed shop';
-    }
-
-    function getGeneratorMatches(limit = 3) {
-      const hours = Number(el('generatorHours').value) || 2;
-      const toolStyle = el('generatorToolStyle').value;
-      const skillFocus = el('generatorSkillFocus').value;
-      const difficulty = el('generatorDifficulty').value;
-      const material = el('generatorMaterial').value;
-      const type = el('generatorType').value;
-      const shortOnly = el('generatorShortOnly').checked;
-
-      const scored = randomProjectIdeas.map(idea => {
-        let score = 0;
-
-        const center = (idea.minHours + idea.maxHours) / 2;
-        const rangeFit = hours >= idea.minHours && hours <= idea.maxHours;
-        const nearFit = hours >= idea.minHours - 0.75 && hours <= idea.maxHours + 0.75;
-
-        if (rangeFit) score += 8;
-        else if (nearFit) score += 4;
-        else score -= Math.min(6, Math.abs(center - hours) * 2);
-
-        if (toolStyle === 'any' || idea.toolStyle === toolStyle || idea.toolStyle === 'mixed') score += 2;
-        if (skillFocus === 'any' || idea.skillTags.includes(skillFocus)) score += 3;
-        if (difficulty === 'any' || idea.difficulty === difficultyValue(difficulty)) score += 2.5;
-        if (material === 'any' || idea.material === material) score += 2;
-        if (type === 'any' || idea.type === type) score += 2;
-        if ((shortOnly || hours <= 2) && idea.shortWindow) score += 3;
-        if ((shortOnly || hours <= 2) && !idea.shortWindow) score -= 2;
-
-        score += Math.random() * 1.2;
-
-        return { ...idea, score };
-      }).sort((a, b) => b.score - a.score);
-
-      return scored.slice(0, Math.min(limit, scored.length));
-    }
-
-    function renderIdeaCard(idea, showSave = true) {
-      const saveButton = showSave
-        ? `<button type="button" onclick="saveGeneratedIdea('${idea.id}')">Save Idea</button>`
-        : '';
-      return `
-        <article class="card">
-          <div class="card-header">
-            <div>
-              <h4>${escapeHtml(idea.name)}</h4>
-              <div class="small muted">${typeLabel(idea.type)} • ${toolStyleLabel(idea.toolStyle)} • ${idea.minHours}–${idea.maxHours} h</div>
-            </div>
-            <span class="badge ${idea.shortWindow ? 'good' : ''}">${ideaDifficultyLabel(idea.difficulty)}</span>
-          </div>
-          <div class="pill-row">
-            ${idea.skillTags.map(tag => `<span class="pill">${escapeHtml(tag)}</span>`).join('')}
-            <span class="pill">${escapeHtml(idea.material)}</span>
-            ${idea.shortWindow ? '<span class="pill">short-window friendly</span>' : ''}
-          </div>
-          <p><strong>Why it fits:</strong> ${escapeHtml(idea.description)}</p>
-          <p><strong>Materials:</strong> ${escapeHtml(idea.materials)}</p>
-          <p><strong>First steps:</strong> ${escapeHtml(idea.firstSteps)}</p>
-          ${saveButton ? `<div class="actions" style="margin-top:10px;">${saveButton}</div>` : ''}
-        </article>
-      `;
-    }
-
-    function runProjectGenerator(limit = 3) {
-      const matches = getGeneratorMatches(limit);
-      if (!matches.length) {
-        el('generatorResults').className = 'empty';
-        el('generatorResults').innerHTML = 'No ideas matched your filters.';
-        return;
-      }
-
-      el('generatorResults').className = 'results-list';
-      el('generatorResults').innerHTML = matches.map((idea, index) => `
-        ${index === 0 ? `<div class="small muted" style="margin-bottom:-2px;">Best fit for your current window</div>` : ''}
-        ${renderIdeaCard(idea, true)}
-      `).join('');
-    }
-
-    function renderSavedIdeas() {
-      const saved = state.generator?.savedIdeas || [];
-      el('savedProjectIdeas').innerHTML = saved.length
-        ? saved.map(idea => `
-          <article class="card">
-            <div class="card-header">
-              <div>
-                <h4>${escapeHtml(idea.name)}</h4>
-                <div class="small muted">${typeLabel(idea.type)} • ${idea.minHours}–${idea.maxHours} h</div>
-              </div>
-              <button class="danger" type="button" onclick="removeSavedIdea('${idea.id}')">Remove</button>
-            </div>
-            <p class="small muted">${escapeHtml(idea.description)}</p>
-          </article>
-        `).join('')
-        : '<div class="empty">No saved ideas yet.</div>';
-    }
-
-    window.saveGeneratedIdea = function(id) {
-      const idea = randomProjectIdeas.find(item => item.id === id);
-      if (!idea) return;
-      state.generator = state.generator || { savedIdeas: [] };
-      if (!state.generator.savedIdeas.some(item => item.id === id)) {
-        state.generator.savedIdeas.push(idea);
-        saveState();
-        renderSavedIdeas();
-      }
-    }
-
-    window.removeSavedIdea = function(id) {
-      state.generator.savedIdeas = (state.generator.savedIdeas || []).filter(item => item.id !== id);
-      saveState();
-      renderSavedIdeas();
-    }
-
-
-    async function exportData() {
-      const payload = {
-        exportedAt: new Date().toISOString(),
-        app: 'Woodworking Workshop Companion',
-        version: 3,
-        data: state
-      };
-      const allMedia = await getAllMedia();
-      if (window.JSZip) {
-        const zip = new JSZip();
-        zip.file('data.json', JSON.stringify(payload, null, 2));
-        allMedia.forEach(item => {
-          const ext = item.fullBlob?.type === 'image/png' ? 'png' : 'jpg';
-          const safeName = (item.filename || item.caption || item.id).replace(/[^a-z0-9._-]+/gi, '_');
-          zip.file(`media/${item.projectId}/${safeName || item.id}.${ext}`, item.fullBlob);
-        });
-        zip.file('media-index.json', JSON.stringify(allMedia.map(item => ({
-          ...item,
-          fullBlob: undefined
-        })), null, 2));
-        const blob = await zip.generateAsync({ type: 'blob' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'woodworking-workshop-data.zip';
-        a.click();
-        URL.revokeObjectURL(url);
-        return;
-      }
-      const fallback = {
-        ...payload,
-        media: await Promise.all(allMedia.map(async item => ({
-          ...item,
-          fullBlob: undefined,
-          fullDataUrl: await fileToDataUrl(new File([item.fullBlob], item.filename || 'media.jpg', { type: item.fullBlob?.type || 'image/jpeg' }))
-        })))
-      };
-      const blob = new Blob([JSON.stringify(fallback, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'woodworking-workshop-data.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    async function importData(file) {
-      if (!file) return;
-      const name = file.name.toLowerCase();
-      try {
-        if (name.endsWith('.zip')) {
-          if (!window.JSZip) throw new Error('ZIP import requires JSZip.');
-          const zip = await JSZip.loadAsync(file);
-          const dataFile = zip.file('data.json');
-          const indexFile = zip.file('media-index.json');
-          if (!dataFile) throw new Error('Missing data.json');
-          const imported = JSON.parse(await dataFile.async('string'));
-          if (!imported.data) throw new Error('Invalid data file');
-          state = {
-            projects: imported.data.projects || [],
-            optimizer: {
-              boards: imported.data.optimizer?.boards || [],
-              parts: imported.data.optimizer?.parts || []
-            },
-            generator: {
-              savedIdeas: imported.data.generator?.savedIdeas || []
-            }
-          };
-          await clearAllMedia();
-          if (indexFile) {
-            const mediaIndex = JSON.parse(await indexFile.async('string'));
-            for (const meta of mediaIndex) {
-              const ext = meta.blobType === 'image/png' ? 'png' : 'jpg';
-              const safeName = (meta.filename || meta.caption || meta.id).replace(/[^a-z0-9._-]+/gi, '_');
-              const zipEntry = zip.file(`media/${meta.projectId}/${safeName || meta.id}.${ext}`);
-              if (!zipEntry) continue;
-              const blob = await zipEntry.async('blob');
-              await putMediaRecord({ ...meta, fullBlob: blob });
-            }
-          }
-        } else {
-          const imported = JSON.parse(await file.text());
-          if (!imported.data) throw new Error('Invalid data file');
-          state = {
-            projects: imported.data.projects || [],
-            optimizer: {
-              boards: imported.data.optimizer?.boards || [],
-              parts: imported.data.optimizer?.parts || []
-            },
-            generator: {
-              savedIdeas: imported.data.generator?.savedIdeas || []
-            }
-          };
-          await clearAllMedia();
-          if (Array.isArray(imported.media)) {
-            for (const item of imported.media) {
-              await putMediaRecord({
-                ...item,
-                fullBlob: item.fullDataUrl ? dataUrlToBlob(item.fullDataUrl) : item.fullBlob
-              });
-            }
-          }
-        }
-        saveState();
-        renderAll();
-        await renderProjectMediaGallery();
-        alert('Data imported successfully.');
-      } catch (err) {
-        console.error(err);
-        alert('Could not import that file.');
-      }
-    }
-
-    async function resetAll() {
-      if (!confirm('Reset all saved projects, boards, parts, and saved project ideas?')) return;
-      state = structuredClone(defaultState);
-      await clearAllMedia();
-      saveState();
-      clearProjectForm();
-      renderAll();
-      el('optimizerSummary').className = 'empty';
-      el('optimizerSummary').innerHTML = 'Add stock boards and parts, then click <strong>Generate Plan</strong>.';
-      el('optimizerResults').innerHTML = '';
-      el('joineryResults').className = 'empty';
-      el('joineryResults').innerHTML = 'Choose your constraints, then click <strong>Recommend Joinery</strong>.';
-      el('generatorResults').className = 'empty';
-      el('generatorResults').innerHTML = 'Enter your constraints, then click <strong>Generate 3 Ideas</strong>.';
-    }
-
-    function renderAll() {
-      renderProjects();
-      renderBoardsAndParts();
-      renderSavedIdeas();
-      renderProjectMediaGallery();
-    }
-
-    renderJoineryChips('projectJoineryChips', joineryOptions);
-    renderJoineryChips('toolChips', toolOptions);
-    setUpTabs();
-    renderAll();
-
-    el('projectForm').addEventListener('submit', handleProjectSubmit);
-    el('clearProjectBtn').addEventListener('click', clearProjectForm);
+  function bindEvents(){
+    el('saveProjectBtn').addEventListener('click', saveProject);
+    el('resetProjectBtn').addEventListener('click', resetProjectForm);
     el('projectFilterStatus').addEventListener('change', renderProjects);
     el('projectSearch').addEventListener('input', renderProjects);
-    el('addBoardBtn').addEventListener('click', addBoard);
-    el('addPartBtn').addEventListener('click', addPart);
-    el('runOptimizerBtn').addEventListener('click', runOptimizer);
-    el('clearOptimizerBtn').addEventListener('click', () => {
-      state.optimizer.boards = [];
-      state.optimizer.parts = [];
-      saveState();
-      renderBoardsAndParts();
-      el('optimizerSummary').className = 'empty';
-      el('optimizerSummary').innerHTML = 'Add stock boards and parts, then click <strong>Generate Plan</strong>.';
-      el('optimizerResults').innerHTML = '';
+    el('closeDetailBtn').addEventListener('click', closeDetail);
+    document.querySelectorAll('.section-header').forEach(head => head.addEventListener('click', () => toggleSection(head.dataset.target)));
+    el('saveNotesBtn').addEventListener('click', saveDetailNotes);
+    el('saveSummaryBtn').addEventListener('click', saveDetailSummary);
+    el('addPhotoBtn').addEventListener('click', () => el('mediaInput').click());
+    el('addPlanBtn').addEventListener('click', () => el('planInput').click());
+    el('jumpNotesBtn').addEventListener('click', () => { const b=el('notesBody'); if (b.classList.contains('collapsed')) toggleSection('notesBody'); el('detailBuildNotes').focus(); });
+    el('jumpMediaBtn').addEventListener('click', () => el('mediaSection').scrollIntoView({behavior:'smooth'}));
+    el('mediaInput').addEventListener('change', e => uploadMedia([...e.target.files]).then(()=> e.target.value=''));
+    el('planInput').addEventListener('change', e => uploadPlans([...e.target.files]).then(()=> e.target.value=''));
+    el('mediaFilter').addEventListener('change', renderMedia);
+    el('viewerClose').addEventListener('click', closeViewer);
+    el('viewerNext').addEventListener('click', nextViewer);
+    el('viewerPrev').addEventListener('click', prevViewer);
+    el('editCaptionBtn').addEventListener('click', editViewerCaption);
+    el('setCoverBtn').addEventListener('click', () => {
+      const item = viewerList[viewerIndex];
+      if (item) setCover(item.id);
     });
-    el('unitLabel').addEventListener('change', renderBoardsAndParts);
-    el('runJoineryBtn').addEventListener('click', runJoinerySelector);
-    el('generateProjectsBtn').addEventListener('click', () => runProjectGenerator(3));
-    el('surpriseProjectBtn').addEventListener('click', () => runProjectGenerator(1));
-    el('saveMediaBtn').addEventListener('click', handleMediaUpload);
-    el('detailMediaFilter').addEventListener('change', renderDetailMediaGallery);
-    el('detailUploadPlanBtn').addEventListener('click', uploadPlanPdf);
-    el('detailSaveNotesBtn').addEventListener('click', saveDetailNotes);
-    el('detailSaveNotesBtn2').addEventListener('click', saveDetailNotes);
-    el('detailAddPhotoBtn').addEventListener('click', () => { el('mediaFiles').click(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
-    el('detailAddPlanBtn').addEventListener('click', () => { el('detailPlanFile').click(); });
-    el('detailJumpMediaBtn').addEventListener('click', () => { el('detailMediaSection').open = true; el('detailMediaSection').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
-    el('refreshMediaBtn').addEventListener('click', renderProjectMediaGallery);
-    el('exportDataBtn').addEventListener('click', exportData);
-    el('importFile').addEventListener('change', (e) => importData(e.target.files[0]));
-    el('resetAllBtn').addEventListener('click', () => resetAll());
-  </script>
+    el('deleteMediaBtn').addEventListener('click', deleteCurrentMedia);
+    el('exportBtn').addEventListener('click', exportData);
+    el('importInput').addEventListener('change', e => { if (e.target.files[0]) importData(e.target.files[0]); e.target.value = ''; });
+    el('optimizeBtn').addEventListener('click', optimizeCuts);
+    el('recommendJoineryBtn').addEventListener('click', recommendJoinery);
+    el('generateIdeasBtn').addEventListener('click', () => generateIdeas(3));
+    el('surpriseIdeaBtn').addEventListener('click', () => generateIdeas(1, true));
+    let touchStart = 0;
+    el('viewerModal').addEventListener('touchstart', e => { touchStart = e.changedTouches[0].clientX; }, {passive:true});
+    el('viewerModal').addEventListener('touchend', e => {
+      const delta = e.changedTouches[0].clientX - touchStart;
+      if (delta > 50) prevViewer();
+      if (delta < -50) nextViewer();
+    }, {passive:true});
+    document.addEventListener('keydown', e => {
+      if (!el('viewerModal').classList.contains('open')) return;
+      if (e.key === 'ArrowRight') nextViewer();
+      if (e.key === 'ArrowLeft') prevViewer();
+      if (e.key === 'Escape') closeViewer();
+    });
+  }
 
+  window.appOpenDetail = openDetail;
+  window.appDeleteProject = deleteProject;
+  window.appConfirmDeleteProject = confirmDeleteProject;
+  window.appEditProject = editProject;
+  window.appOpenViewer = openViewer;
+  window.appSetCover = setCover;
+  window.appOpenPlan = openPlan;
+  window.appDeletePlan = deletePlan;
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js').catch((err) => {
-          console.error('Service worker registration failed:', err);
-        });
-      });
-    }
-  </script>
-
+  async function init(){
+    renderJoineryChecks();
+    setUpTabs();
+    bindEvents();
+    await openDb().then(x => db = x);
+    await renderProjects();
+    optimizeCuts();
+    recommendJoinery();
+    generateIdeas(3);
+    initPwa();
+  }
+  init();
+})();
+</script>
 </body>
 </html>
