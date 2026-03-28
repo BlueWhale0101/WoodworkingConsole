@@ -121,7 +121,7 @@
       <button id="installBtn" style="display:none">Install App</button>
       <button id="exportBtn">Export Data</button>
       <label class="file-label" for="importInput">Import Data</label>
-      <input id="importInput" type="file" accept="application/json" hidden />
+      <input id="importInput" type="file" accept="application/json,.json,.zip,application/zip" hidden />
     </div>
   </section>
 
@@ -423,6 +423,7 @@ Top Slat,900,120,19,5</textarea>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 (() => {
   const STORAGE_KEY = 'woodworking_workshop_companion_final_v1';
@@ -683,6 +684,117 @@ Top Slat,900,120,19,5</textarea>
     for (const item of media) await deleteMediaRecord(item.id);
     for (const item of plans) await deletePlanRecord(item.id);
   }
+  async function getAllMediaRecords(){ return withStore('media','readonly', store => store.getAll()); }
+  async function getAllPlanRecords(){ return withStore('plans','readonly', store => store.getAll()); }
+  async function clearAllAssets(){
+    await withStore('media','readwrite', store => store.clear());
+    await withStore('plans','readwrite', store => store.clear());
+  }
+  function safeFileName(value){
+    return String(value || 'file').replace(/[^a-z0-9._-]+/gi, '_').replace(/^_+|_+$/g,'') || 'file';
+  }
+  function extFromMime(mime, fallback){
+    if (!mime) return fallback || 'bin';
+    if (mime.includes('png')) return 'png';
+    if (mime.includes('webp')) return 'webp';
+    if (mime.includes('gif')) return 'gif';
+    if (mime.includes('svg')) return 'svg';
+    if (mime.includes('pdf')) return 'pdf';
+    if (mime.includes('jpeg') || mime.includes('jpg')) return 'jpg';
+    return fallback || 'bin';
+  }
+  function detectMimeFromDataUrl(dataUrl, fallback){
+    const match = String(dataUrl || '').match(/^data:([^;]+);/i);
+    return match ? match[1] : (fallback || 'application/octet-stream');
+  }
+  function extFromRecord(record, fallback){
+    const mime = record?.mime || record?.blobType || detectMimeFromDataUrl(record?.dataUrl, '');
+    return extFromMime(mime, fallback || 'bin');
+  }
+  function blobToDataUrl(blob){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+  }
+  function normalizeImportedState(parsed){
+    const raw = parsed?.state || parsed?.data || parsed;
+    if (!raw || !Array.isArray(raw.projects)) throw new Error('Invalid backup');
+    return {
+      projects: raw.projects || [],
+      savedIdeas: raw.savedIdeas || raw.generator?.savedIdeas || [],
+      coverMap: raw.coverMap || {}
+    };
+  }
+  async function loadBackupPayload(parsed){
+    state = normalizeImportedState(parsed);
+    await clearAllAssets();
+    if (Array.isArray(parsed.media)) {
+      for (const item of parsed.media) await saveMediaRecord(item);
+    }
+    if (Array.isArray(parsed.plans)) {
+      for (const item of parsed.plans) await savePlanRecord(item);
+    }
+    saveState();
+    closeDetail();
+    renderProjects();
+  }
+  async function importLegacyZip(zip, parsed){
+    state = normalizeImportedState(parsed);
+    await clearAllAssets();
+
+    const mediaIndexFile = zip.file('media-index.json');
+    if (mediaIndexFile) {
+      const mediaIndex = JSON.parse(await mediaIndexFile.async('string'));
+      for (const meta of mediaIndex) {
+        if (meta.dataUrl) {
+          await saveMediaRecord(meta);
+          continue;
+        }
+        let entry = meta.path ? zip.file(meta.path) : null;
+        if (!entry) {
+          const ext = extFromRecord(meta, 'jpg');
+          const safeName = safeFileName(meta.filename || meta.name || meta.caption || meta.id);
+          entry = zip.file(`media/${meta.projectId}/${safeName}.${ext}`) || zip.file(`media/${meta.projectId}/${safeName}`);
+        }
+        if (!entry) continue;
+        const blob = await entry.async('blob');
+        const dataUrl = await blobToDataUrl(blob);
+        await saveMediaRecord({...meta, dataUrl});
+      }
+    } else if (Array.isArray(parsed.media)) {
+      for (const item of parsed.media) await saveMediaRecord(item);
+    }
+
+    const planIndexFile = zip.file('plans-index.json');
+    if (planIndexFile) {
+      const planIndex = JSON.parse(await planIndexFile.async('string'));
+      for (const meta of planIndex) {
+        if (meta.dataUrl) {
+          await savePlanRecord(meta);
+          continue;
+        }
+        let entry = meta.path ? zip.file(meta.path) : null;
+        if (!entry) {
+          const ext = extFromRecord(meta, 'pdf');
+          const safeName = safeFileName(meta.name || meta.id);
+          entry = zip.file(`plans/${meta.projectId}/${safeName}.${ext}`) || zip.file(`plans/${meta.projectId}/${safeName}`);
+        }
+        if (!entry) continue;
+        const blob = await entry.async('blob');
+        const dataUrl = await blobToDataUrl(blob);
+        await savePlanRecord({...meta, dataUrl});
+      }
+    } else if (Array.isArray(parsed.plans)) {
+      for (const item of parsed.plans) await savePlanRecord(item);
+    }
+
+    saveState();
+    closeDetail();
+    renderProjects();
+  }
 
   async function openDetail(projectId){
     selectedProjectId = projectId;
@@ -902,38 +1014,73 @@ Top Slat,900,120,19,5</textarea>
     renderPlans();
   }
 
-  function exportData(){
+  async function exportData(){
     const payload = {
       exportedAt: new Date().toISOString(),
       app: 'Woodworking Workshop Companion',
-      state
+      version: 2,
+      state,
+      media: await getAllMediaRecords(),
+      plans: await getAllPlanRecords()
     };
+
+    if (window.JSZip) {
+      const zip = new JSZip();
+      zip.file('backup.json', JSON.stringify(payload, null, 2));
+      const blob = await zip.generateAsync({type:'blob'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'woodworking-workshop-companion-backup.zip';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      return;
+    }
+
     const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'woodworking-workshop-companion-data.json';
+    a.download = 'woodworking-workshop-companion-backup.json';
     a.click();
     URL.revokeObjectURL(a.href);
   }
-  function importData(file){
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const parsed = JSON.parse(reader.result);
-        if (!parsed.state || !Array.isArray(parsed.state.projects)) throw new Error('bad');
-        state = {
-          projects: parsed.state.projects,
-          savedIdeas: parsed.state.savedIdeas || [],
-          coverMap: parsed.state.coverMap || {}
-        };
-        saveState();
-        renderProjects();
-        alert('Text data imported. Media and PDFs remain on the current browser/device because they are stored in IndexedDB.');
-      } catch {
-        alert('That file could not be imported.');
+  async function importData(file){
+    if (!file) return;
+    if (!confirm('Importing a backup will replace the current projects, photos, plans, and saved ideas on this browser. Continue?')) return;
+    const name = file.name.toLowerCase();
+    try {
+      if (name.endsWith('.zip')) {
+        if (!window.JSZip) throw new Error('ZIP support unavailable');
+        const zip = await JSZip.loadAsync(file);
+        const backupEntry = zip.file('backup.json');
+        if (backupEntry) {
+          const parsed = JSON.parse(await backupEntry.async('string'));
+          await loadBackupPayload(parsed);
+          alert('Backup imported successfully, including photos and PDF plans.');
+          return;
+        }
+        const dataEntry = zip.file('data.json');
+        if (!dataEntry) throw new Error('Missing backup.json or data.json');
+        const parsed = JSON.parse(await dataEntry.async('string'));
+        await importLegacyZip(zip, parsed);
+        alert('Backup imported successfully.');
+        return;
       }
-    };
-    reader.readAsText(file);
+
+      const parsed = JSON.parse(await file.text());
+      if (Array.isArray(parsed.media) || Array.isArray(parsed.plans)) {
+        await loadBackupPayload(parsed);
+        alert('Backup imported successfully, including photos and PDF plans.');
+      } else {
+        state = normalizeImportedState(parsed);
+        saveState();
+        closeDetail();
+        renderProjects();
+        alert('Text data imported. Photos and PDF plans are not included in that older export format.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('That file could not be imported.');
+    }
   }
 
   function parseCsvLines(text, expectedMin){

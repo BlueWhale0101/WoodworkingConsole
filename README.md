@@ -18,5 +18,7 @@ This bundle is ready for GitHub Pages.
 ## Notes
 - Project text data is stored in `localStorage`.
 - Photos and PDF plans are stored in `IndexedDB`.
-- The built-in export/import covers text state only. Media and PDFs stay on the current browser/device.
+- Export/import now supports full ZIP backups that include projects, notes, photos, and PDF plans.
+- The app can still import older JSON exports, but those older exports only restore text data.
+- ZIP backup uses the JSZip helper loaded from a CDN, so load the app online once before relying on export/import offline.
 - The app works offline after the first successful load.
